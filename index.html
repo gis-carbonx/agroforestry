@@ -5,627 +5,682 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SIG Lahan Garapan – CMI</title>
 
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Papa Parse (CSV) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.0/papaparse.min.js"></script>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #f4f6f0;
-      --surface:   #ffffff;
-      --border:    #e4e8df;
-      --text:      #1a1f14;
-      --muted:     #6b7668;
+      --bg:       #f2f4ef;
+      --surface:  #ffffff;
+      --border:   #e2e6dd;
+      --text:     #18201a;
+      --muted:    #6b7668;
 
-      --agr-reg:   #3d8c40;   /* Agroforestri Reguler */
-      --agr-bpo:   #8bc34a;   /* Agroforestri BPO */
-      --tbw-reg:   #e07b2a;   /* Tembawang Reguler */
-      --tbw-mtl:   #f5c842;   /* Tembawang MTL */
+      /* 4 sub-program colors */
+      --agr-reg:  #2d7d32;
+      --agr-bpo:  #7cb342;
+      --tbw-reg:  #d4650a;
+      --tbw-mtl:  #e8a800;
 
-      --agr:       #3d8c40;
-      --tbw:       #e07b2a;
+      --agr:      #2d7d32;
+      --tbw:      #d4650a;
 
-      --radius:    12px;
-      --shadow:    0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.05);
+      --r: 12px;
+      --sh: 0 1px 2px rgba(0,0,0,.06), 0 3px 10px rgba(0,0,0,.05);
     }
 
-    html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
 
-    /* ── HEADER ─────────────────────────────────────── */
+    /* HEADER */
     header {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 28px;
-      background: var(--surface);
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 24px; background: var(--surface);
       border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 1000;
     }
-    header img#logo { height: 36px; width: auto; }
-    .header-title { flex: 1; }
-    .header-title h1 { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; letter-spacing: -.02em; }
-    .header-title p  { font-size: .75rem; color: var(--muted); margin-top: 1px; }
-    .badge-admin {
-      font-size: .72rem; padding: 4px 12px; border-radius: 20px;
+    #logo { height: 34px; width: auto; object-fit: contain; }
+    .h-title h1 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+    .h-title p  { font-size: .7rem; color: var(--muted); }
+    .h-spacer   { flex: 1; }
+    #statusBadge {
+      font-size: .68rem; padding: 3px 10px; border-radius: 20px;
       background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+      transition: all .3s;
     }
+    #statusBadge.ok  { background:#e8f5e9; border-color:#a5d6a7; color:#2d7d32; }
+    #statusBadge.err { background:#ffebee; border-color:#ef9a9a; color:#c62828; }
 
-    /* ── STAT CARDS ──────────────────────────────────── */
+    /* STATS */
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 14px;
-      padding: 20px 28px 0;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px; padding: 16px 24px 0;
     }
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      box-shadow: var(--shadow);
+    .sc {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 16px 18px; box-shadow: var(--sh);
     }
-    .stat-card .label { font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-    .stat-card .big   { font-family: 'Syne', sans-serif; font-size: 1.9rem; font-weight: 700; line-height: 1; }
-    .stat-card .sub   { font-size: .75rem; color: var(--muted); margin-top: 4px; }
-    .stat-card .progress-wrap { margin-top: 10px; }
-    .progress-bar { height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 5px; }
-    .progress-fill { height: 100%; background: var(--agr); border-radius: 99px; transition: width .8s ease; }
-    .stat-row-inner { display: flex; gap: 20px; margin-top: 10px; }
-    .stat-mini { flex: 1; }
-    .stat-mini .val { font-size: 1.15rem; font-weight: 600; }
-    .stat-mini .lbl { font-size: .7rem; color: var(--muted); }
-    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
-    .breakdown { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
-    .breakdown-item { display: flex; justify-content: space-between; align-items: center; font-size: .75rem; }
-    .breakdown-item span { display: flex; align-items: center; color: var(--muted); }
-    .breakdown-item b  { font-weight: 600; }
+    .sc-label { font-size: .65rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .sc-big   { font-family: 'Syne', sans-serif; font-size: 1.75rem; font-weight: 800; line-height: 1; }
+    .sc-sub   { font-size: .7rem; color: var(--muted); margin-top: 3px; }
+    .prog-bar { height: 4px; background: var(--border); border-radius: 99px; margin-top: 8px; overflow: hidden; }
+    .prog-fill{ height: 100%; background: var(--agr); border-radius: 99px; width: 0; transition: width 1s ease; }
+    .sc-pct   { display: flex; justify-content: space-between; font-size: .68rem; color: var(--muted); margin-top: 6px; }
+    .bk       { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .bk-row   { display: flex; justify-content: space-between; font-size: .72rem; }
+    .bk-row span { display: flex; align-items: center; gap: 5px; color: var(--muted); }
+    .bk-row b { font-weight: 600; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .sc-members { display: flex; gap: 16px; margin-top: 8px; }
+    .sc-m { flex: 1; }
+    .sc-m .mv { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; }
+    .sc-m .ml { font-size: .68rem; color: var(--muted); }
 
-    /* ── BODY LAYOUT ─────────────────────────────────── */
-    .body-wrap {
-      display: grid;
-      grid-template-columns: 310px 1fr;
-      gap: 14px;
-      padding: 16px 28px 28px;
-      height: calc(100vh - 68px - 130px - 30px);
-      min-height: 500px;
-    }
+    /* BODY */
+    .body { display: grid; grid-template-columns: 300px 1fr; gap: 12px; padding: 14px 24px 24px; height: calc(100vh - 62px - 108px - 26px); min-height: 480px; }
 
-    /* ── LEFT PANEL ──────────────────────────────────── */
-    .panel-left {
-      display: flex; flex-direction: column; gap: 14px; overflow-y: auto;
-    }
-    .panel-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow);
-    }
-    .panel-box h3 { font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    /* PANEL */
+    .panel { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-right: 2px; }
+    .pbox { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; box-shadow: var(--sh); }
+    .pbox-title { font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
 
-    /* KTH list */
-    .kth-list { display: flex; flex-direction: column; gap: 8px; }
+    /* KTH */
+    .kth-list { display: flex; flex-direction: column; gap: 7px; }
     .kth-item {
-      border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
-      cursor: pointer; transition: border-color .2s, background .2s;
+      border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px;
+      cursor: pointer; transition: border-color .15s, background .15s;
     }
-    .kth-item:hover { border-color: var(--agr); background: #f7faf4; }
-    .kth-item.active { border-color: var(--agr); background: #f0f7ef; }
-    .kth-header { display: flex; justify-content: space-between; align-items: center; }
-    .kth-name  { font-size: .82rem; font-weight: 600; }
-    .kth-desa  { font-size: .7rem; color: var(--muted); margin-top: 2px; }
-    .kth-ha    { font-family: 'Syne', sans-serif; font-size: .9rem; font-weight: 700; color: var(--agr); }
-    .kth-bars  { display: flex; gap: 6px; margin-top: 8px; }
-    .kth-bar-item { flex: 1; }
-    .kth-bar-lbl  { display: flex; justify-content: space-between; font-size: .65rem; color: var(--muted); margin-bottom: 2px; }
-    .kth-bar-track { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
-    .kth-bar-fill  { height: 100%; border-radius: 99px; }
+    .kth-item:hover { border-color: var(--agr); background: #f6faf4; }
+    .kth-item.active { border-color: var(--agr); background: #edf7eb; }
+    .kth-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .kth-name { font-size: .8rem; font-weight: 600; }
+    .kth-ha { font-family: 'Syne', sans-serif; font-size: .88rem; font-weight: 700; color: var(--agr); }
+    .kth-bars { margin-top: 7px; display: flex; flex-direction: column; gap: 4px; }
+    .kbar { }
+    .kbar-top { display: flex; justify-content: space-between; font-size: .64rem; color: var(--muted); margin-bottom: 2px; }
+    .kbar-track { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .kbar-fill  { height: 100%; border-radius: 99px; }
+    .kth-empty  { font-size: .72rem; color: var(--muted); text-align: center; padding: 12px; }
 
-    /* Legend & Layer */
-    .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .legend-item { display: flex; align-items: center; gap: 7px; font-size: .75rem; }
-    .legend-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
-    .legend-dashed { width: 14px; height: 2px; border-top: 2px dashed var(--muted); flex-shrink: 0; }
+    /* Legend */
+    .leg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+    .leg-item { display: flex; align-items: center; gap: 6px; font-size: .72rem; }
+    .leg-sw { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .leg-dash { width: 16px; height: 0; border-top: 2px dashed var(--muted); flex-shrink: 0; }
 
-    .layer-list { display: flex; flex-direction: column; gap: 8px; }
-    .layer-item { display: flex; justify-content: space-between; align-items: center; font-size: .78rem; }
-    .toggle { position: relative; width: 36px; height: 20px; }
-    .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
-      position: absolute; inset: 0; border-radius: 20px; background: var(--border);
-      cursor: pointer; transition: background .2s;
+    /* Layer toggles */
+    .lay-list { display: flex; flex-direction: column; gap: 7px; }
+    .lay-item { display: flex; justify-content: space-between; align-items: center; font-size: .75rem; }
+    .tog { position: relative; width: 34px; height: 18px; flex-shrink: 0; }
+    .tog input { opacity: 0; width: 0; height: 0; }
+    .tog-sl {
+      position: absolute; inset: 0; border-radius: 20px;
+      background: var(--border); cursor: pointer; transition: background .2s;
     }
-    .toggle-slider::before {
-      content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%;
+    .tog-sl::before {
+      content: ''; position: absolute; width: 12px; height: 12px; border-radius: 50%;
       background: #fff; top: 3px; left: 3px; transition: transform .2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+      box-shadow: 0 1px 3px rgba(0,0,0,.25);
     }
-    .toggle input:checked + .toggle-slider { background: var(--agr); }
-    .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+    .tog input:checked + .tog-sl { background: var(--agr); }
+    .tog input:checked + .tog-sl::before { transform: translateX(16px); }
 
-    /* ── MAP ─────────────────────────────────────────── */
+    /* MAP */
     #map {
-      border-radius: var(--radius);
-      overflow: hidden;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      height: 100%;
-      min-height: 440px;
+      border-radius: var(--r); border: 1px solid var(--border);
+      box-shadow: var(--sh); height: 100%; min-height: 420px;
     }
 
-    /* Leaflet popup override */
+    /* POPUP */
     .leaflet-popup-content-wrapper {
-      border-radius: 10px !important;
-      box-shadow: 0 4px 24px rgba(0,0,0,.12) !important;
-      border: 1px solid var(--border) !important;
-      padding: 0 !important;
-      font-family: 'DM Sans', sans-serif !important;
-      min-width: 230px;
+      border-radius: 10px !important; border: 1px solid var(--border) !important;
+      box-shadow: 0 6px 24px rgba(0,0,0,.13) !important;
+      font-family: 'DM Sans', sans-serif !important; padding: 0 !important;
     }
-    .leaflet-popup-content { margin: 0 !important; }
+    .leaflet-popup-content { margin: 0 !important; min-width: 220px; }
     .leaflet-popup-tip-container { display: none; }
-    .popup-wrap { padding: 14px 16px 16px; }
-    .popup-badge {
-      display: inline-block; font-size: .65rem; font-weight: 600; letter-spacing: .06em;
-      text-transform: uppercase; padding: 3px 8px; border-radius: 99px; margin-bottom: 10px;
+    .pu { padding: 13px 15px 15px; }
+    .pu-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .62rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 99px; margin-bottom: 9px;
     }
-    .popup-title { font-family: 'Syne', sans-serif; font-size: .9rem; font-weight: 700; margin-bottom: 8px; }
-    .popup-table { width: 100%; border-collapse: collapse; font-size: .74rem; }
-    .popup-table tr td { padding: 3px 0; vertical-align: top; }
-    .popup-table tr td:first-child { color: var(--muted); width: 44%; }
-    .popup-table tr td:last-child   { font-weight: 500; }
+    .pu-name { font-family: 'Syne', sans-serif; font-size: .88rem; font-weight: 700; margin-bottom: 9px; }
+    .pu-tbl { width: 100%; font-size: .72rem; border-collapse: collapse; }
+    .pu-tbl td { padding: 2.5px 0; vertical-align: top; }
+    .pu-tbl td:first-child { color: var(--muted); width: 42%; }
+    .pu-tbl td:last-child { font-weight: 500; }
 
-    /* loading */
+    /* LOADING OVERLAY */
     #loading {
       position: fixed; inset: 0; background: var(--bg);
       display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 14px; z-index: 9999;
+      flex-direction: column; gap: 12px; z-index: 9999;
     }
-    .spinner {
-      width: 36px; height: 36px; border: 3px solid var(--border);
+    .spin {
+      width: 34px; height: 34px; border: 3px solid var(--border);
       border-top-color: var(--agr); border-radius: 50%;
-      animation: spin .7s linear infinite;
+      animation: spin .65s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    #loading p { font-size: .8rem; color: var(--muted); }
+    #loading p { font-size: .75rem; color: var(--muted); }
 
-    @media (max-width: 768px) {
-      .stats-row { grid-template-columns: 1fr 1fr; padding: 12px 14px 0; }
-      .body-wrap  { grid-template-columns: 1fr; padding: 12px 14px 14px; height: auto; }
-      #map        { height: 380px; }
+    /* SCROLLBAR */
+    .panel::-webkit-scrollbar { width: 4px; }
+    .panel::-webkit-scrollbar-track { background: transparent; }
+    .panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    @media (max-width: 860px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .body { grid-template-columns: 1fr; height: auto; }
+      #map  { height: 360px; }
     }
   </style>
 </head>
 <body>
 
 <div id="loading">
-  <div class="spinner"></div>
-  <p>Memuat data…</p>
+  <div class="spin"></div>
+  <p id="loadMsg">Menghubungkan ke sumber data…</p>
 </div>
 
-<!-- HEADER -->
 <header>
-  <img id="logo" src="logo-cmi.png" alt="CMI Logo" onerror="this.style.display='none'" />
-  <div class="header-title">
+  <img id="logo" src="logo-cmi.png" alt="CMI" onerror="this.style.display='none'" />
+  <div class="h-title">
     <h1>SIG Lahan Garapan Masyarakat</h1>
-    <p>Sebaran Area &amp; Statistik</p>
+    <p>Sebaran Area &amp; Statistik · CMI</p>
   </div>
-  <span class="badge-admin">Admin</span>
+  <div class="h-spacer"></div>
+  <span id="statusBadge">Memuat…</span>
 </header>
 
-<!-- STAT CARDS -->
-<div class="stats-row" id="statsRow">
-  <div class="stat-card">
-    <div class="label">Total Lahan Garapan</div>
-    <div class="big" id="statTotalHa">—</div>
-    <div class="sub" id="statTotalSub">memuat…</div>
-    <div class="progress-wrap">
-      <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted)">
-        <span>Persentase terdaftar</span><span id="statPct">—</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+<div class="stats-row">
+  <div class="sc">
+    <div class="sc-label">Total Lahan Garapan</div>
+    <div class="sc-big" id="sTotalHa">—</div>
+    <div class="sc-sub" id="sTotalSub">—</div>
+    <div class="sc-pct"><span>Persentase terdaftar</span><span id="sPct">—</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="sProgFill"></div></div>
+  </div>
+  <div class="sc">
+    <div class="sc-label">Agroforestri</div>
+    <div class="sc-big" style="color:var(--agr)" id="sAgrHa">—</div>
+    <div class="bk" id="sAgrBk"></div>
+  </div>
+  <div class="sc">
+    <div class="sc-label">Tembawang</div>
+    <div class="sc-big" style="color:var(--tbw)" id="sTbwHa">—</div>
+    <div class="bk" id="sTbwBk"></div>
+  </div>
+  <div class="sc">
+    <div class="sc-label">Anggota Terdaftar</div>
+    <div class="sc-members">
+      <div class="sc-m"><div class="mv" style="color:#2563eb" id="sLaki">—</div><div class="ml">Laki-laki</div></div>
+      <div class="sc-m"><div class="mv" style="color:#db2777" id="sPerempuan">—</div><div class="ml">Perempuan</div></div>
     </div>
-  </div>
-
-  <div class="stat-card">
-    <div class="label">Agroforestri</div>
-    <div class="big" style="color:var(--agr)" id="statAgrHa">—</div>
-    <div class="breakdown" id="statAgrBreak"></div>
-  </div>
-
-  <div class="stat-card">
-    <div class="label">Tembawang</div>
-    <div class="big" style="color:var(--tbw)" id="statTbwHa">—</div>
-    <div class="breakdown" id="statTbwBreak"></div>
-  </div>
-
-  <div class="stat-card">
-    <div class="label">Anggota Terdaftar</div>
-    <div class="stat-row-inner">
-      <div class="stat-mini">
-        <div class="val" style="color:#3b82f6" id="statLaki">—</div>
-        <div class="lbl">Laki-laki</div>
-      </div>
-      <div class="stat-mini">
-        <div class="val" style="color:#ec4899" id="statPerempuan">—</div>
-        <div class="lbl">Perempuan</div>
-      </div>
-    </div>
-    <div class="sub" id="statTotal" style="margin-top:10px">—</div>
+    <div class="sc-sub" id="sAnggota" style="margin-top:6px">—</div>
   </div>
 </div>
 
-<!-- BODY -->
-<div class="body-wrap">
+<div class="body">
+  <div class="panel">
 
-  <!-- LEFT -->
-  <div class="panel-left">
-
-    <div class="panel-box">
-      <h3>KTH Terdaftar</h3>
-      <div class="kth-list" id="kthList"><p style="font-size:.75rem;color:var(--muted)">Memuat…</p></div>
+    <div class="pbox">
+      <div class="pbox-title">KTH Terdaftar</div>
+      <div class="kth-list" id="kthList"><div class="kth-empty">Memuat…</div></div>
     </div>
 
-    <div class="panel-box">
-      <h3>Legenda</h3>
-      <div class="legend-grid">
-        <div class="legend-item"><div class="legend-swatch" style="background:var(--agr-reg)"></div> Agro. Reguler</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:var(--agr-bpo)"></div> Agro. BPO</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:var(--tbw-reg)"></div> Tbw. Reguler</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:var(--tbw-mtl)"></div> Tbw. MTL</div>
-        <div class="legend-item"><div class="legend-dashed"></div> Batas Wilayah</div>
+    <div class="pbox">
+      <div class="pbox-title">Legenda</div>
+      <div class="leg-grid">
+        <div class="leg-item"><div class="leg-sw" style="background:var(--agr-reg)"></div><span>Agro. Reguler</span></div>
+        <div class="leg-item"><div class="leg-sw" style="background:var(--agr-bpo)"></div><span>Agro. BPO</span></div>
+        <div class="leg-item"><div class="leg-sw" style="background:var(--tbw-reg)"></div><span>Tbw. Reguler</span></div>
+        <div class="leg-item"><div class="leg-sw" style="background:var(--tbw-mtl)"></div><span>Tbw. MTL</span></div>
+        <div class="leg-item"><div class="leg-dash"></div><span>Batas Wilayah</span></div>
       </div>
     </div>
 
-    <div class="panel-box">
-      <h3>Kontrol Layer</h3>
-      <div class="layer-list">
-        <div class="layer-item">
-          <span>Agroforestri Reguler</span>
-          <label class="toggle"><input type="checkbox" id="togAgrReg" checked onchange="toggleLayer('agrReg',this.checked)"><div class="toggle-slider"></div></label>
-        </div>
-        <div class="layer-item">
-          <span>Agroforestri BPO</span>
-          <label class="toggle"><input type="checkbox" id="togAgrBpo" checked onchange="toggleLayer('agrBpo',this.checked)"><div class="toggle-slider"></div></label>
-        </div>
-        <div class="layer-item">
-          <span>Tembawang Reguler</span>
-          <label class="toggle"><input type="checkbox" id="togTbwReg" checked onchange="toggleLayer('tbwReg',this.checked)"><div class="toggle-slider"></div></label>
-        </div>
-        <div class="layer-item">
-          <span>Tembawang MTL</span>
-          <label class="toggle"><input type="checkbox" id="togTbwMtl" checked onchange="toggleLayer('tbwMtl',this.checked)"><div class="toggle-slider"></div></label>
-        </div>
-        <div class="layer-item">
-          <span>Batas Wilayah</span>
-          <label class="toggle"><input type="checkbox" id="togBatas" checked onchange="toggleLayer('batas',this.checked)"><div class="toggle-slider"></div></label>
-        </div>
+    <div class="pbox">
+      <div class="pbox-title">Kontrol Layer</div>
+      <div class="lay-list">
+        <div class="lay-item"><span>Agro. Reguler</span><label class="tog"><input type="checkbox" checked onchange="toggleLayer('agrReg',this.checked)"><div class="tog-sl"></div></label></div>
+        <div class="lay-item"><span>Agro. BPO</span><label class="tog"><input type="checkbox" checked onchange="toggleLayer('agrBpo',this.checked)"><div class="tog-sl"></div></label></div>
+        <div class="lay-item"><span>Tembawang Reguler</span><label class="tog"><input type="checkbox" checked onchange="toggleLayer('tbwReg',this.checked)"><div class="tog-sl"></div></label></div>
+        <div class="lay-item"><span>Tembawang MTL</span><label class="tog"><input type="checkbox" checked onchange="toggleLayer('tbwMtl',this.checked)"><div class="tog-sl"></div></label></div>
+        <div class="lay-item"><span>Batas Wilayah</span><label class="tog"><input type="checkbox" checked onchange="toggleLayer('batas',this.checked)"><div class="tog-sl"></div></label></div>
       </div>
     </div>
 
-  </div><!-- /panel-left -->
+  </div>
 
-  <!-- MAP -->
   <div id="map"></div>
-
-</div><!-- /body-wrap -->
+</div>
 
 <script>
-/* ═══════════════════════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    CONFIG
-═══════════════════════════════════════════════════════ */
-const GSHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR5SntOMTVB2j-EUNYdOsamaW5KgOXjmGC4Ir8EevLR9F9M5BAWoolk7LRSp0DSoSZDWIOEeeKOFXS/pub?output=csv';
-const AGRO_JSON  = 'https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/agro.json';
-const BATAS_JSON = 'https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/CMI.json';
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR5SntOMTVB2j-EUNYdOsamaW5KgOXjmGC4Ir8EevLR9F9M5BAWoolk7LRSp0DSoSZDWIOEeeKOFXS/pub?output=csv';
+const AGRO_URL  = 'https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/agro.json';
+const BATAS_URL = 'https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/CMI.json';
+const TARGET_HA = 2000;
 
-const COLOR = {
-  agrReg: '#3d8c40',
-  agrBpo: '#8bc34a',
-  tbwReg: '#e07b2a',
-  tbwMtl: '#f5c842',
-};
+// Proxy to bypass CORS on Google Sheets
+const CSV_PROXY = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(CSV_URL);
 
-/* ═══════════════════════════════════════════════════════
-   INIT MAP
-═══════════════════════════════════════════════════════ */
+const COLOR = { agrReg:'#2d7d32', agrBpo:'#7cb342', tbwReg:'#d4650a', tbwMtl:'#e8a800' };
+const LABEL = { agrReg:'Agroforestri Reguler', agrBpo:'Agroforestri BPO', tbwReg:'Tembawang Reguler', tbwMtl:'Tembawang MTL' };
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MAP INIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const map = L.map('map', { zoomControl: false });
 L.control.zoom({ position: 'topleft' }).addTo(map);
-
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '© OpenStreetMap © CARTO',
-  maxZoom: 19
+  attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 20
 }).addTo(map);
-map.setView([0, 112], 8);
+map.setView([0.5, 111], 9);
 
-const layers = { agrReg: null, agrBpo: null, tbwReg: null, tbwMtl: null, batas: null };
+const gLayers = { agrReg: null, agrBpo: null, tbwReg: null, tbwMtl: null, batas: null };
 
-function toggleLayer(key, show) {
-  if (!layers[key]) return;
-  if (show) map.addLayer(layers[key]);
-  else map.removeLayer(layers[key]);
+function toggleLayer(k, show) {
+  if (!gLayers[k]) return;
+  show ? map.addLayer(gLayers[k]) : map.removeLayer(gLayers[k]);
 }
 
-/* ═══════════════════════════════════════════════════════
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    HELPERS
-═══════════════════════════════════════════════════════ */
-function fmt(n) {
-  return n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const fmt = n => (+n).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtN = n => (+n).toLocaleString('id-ID');
 
-function getProgram(row) {
-  const r = parseFloat(row['R'] || row[17] || '');
-  const s = parseFloat(row['S'] || row[18] || '');
-  const t = parseFloat(row['T'] || row[19] || '');
-  const u = parseFloat(row['U'] || row[20] || '');
-  if (s > 0) return { prog: 'agrBpo', ha: s };
-  if (r > 0) return { prog: 'agrReg', ha: r };
-  if (t > 0) return { prog: 'tbwReg', ha: t };
-  if (u > 0) return { prog: 'tbwMtl', ha: u };
+// Get sub-program key from CSV row using R/S/T/U columns
+// Since CSV is header-based, we try both header names and positional index
+function getSubProg(row, headers) {
+  // Find column indices for R, S, T, U by header letter or name
+  const get = (keys) => {
+    for (const k of keys) {
+      const v = row[k];
+      if (v !== undefined && v !== null && v !== '') {
+        const n = parseFloat(String(v).replace(',','.'));
+        if (!isNaN(n) && n > 0) return n;
+      }
+    }
+    return 0;
+  };
+
+  const R = get(['R', 'AGR']); // Agroforestri Reguler (MoU)
+  const S = get(['S', 'BPO']); // Agroforestri BPO
+  const T = get(['T', 'TBW']); // Tembawang Reguler
+  const U = get(['U', 'MTL']); // Tembawang MTL
+
+  if (S > 0) return { key: 'agrBpo', ha: S };
+  if (R > 0) return { key: 'agrReg', ha: R };
+  if (T > 0) return { key: 'tbwReg', ha: T };
+  if (U > 0) return { key: 'tbwMtl', ha: U };
   return null;
 }
 
-/* ═══════════════════════════════════════════════════════
+// Fallback: classify by JSON Program field
+function classifyByJsonProgram(program, subHint) {
+  const p = (program || '').trim().toLowerCase();
+  if (p.includes('insentif') || p.includes('tutupan')) return 'tbwMtl';
+  if (p.includes('tembawang'))                          return 'tbwReg';
+  if (p.includes('bantuan pupuk') || p.includes('bpo') || p.includes('pupuk gratis')) return 'agrBpo';
+  if (p.includes('agroforestry') || p.includes('agroforestri')) return 'agrReg';
+  return null;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    MAIN
-═══════════════════════════════════════════════════════ */
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 async function main() {
-  const [csvText, agroGeo, batasGeo] = await Promise.all([
-    fetch(GSHEET_CSV).then(r => r.text()),
-    fetch(AGRO_JSON).then(r => r.json()),
-    fetch(BATAS_JSON).then(r => r.json()),
+  const setMsg = m => document.getElementById('loadMsg').textContent = m;
+
+  setMsg('Mengambil data JSON…');
+  const [agroGeo, batasGeo] = await Promise.all([
+    fetch(AGRO_URL).then(r => r.json()),
+    fetch(BATAS_URL).then(r => r.json()),
   ]);
 
-  const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-  const rows = parsed.data;
+  setMsg('Mengambil data spreadsheet…');
+  let rows = [];
+  let csvHeaders = [];
+  let csvOk = false;
 
-  /* ── Stats ───────────────────────────────────────── */
-  let totalHa = 0, agrRegHa = 0, agrBpoHa = 0, tbwRegHa = 0, tbwMtlHa = 0;
-  const uniqueNames = new Map(); // name → {laki, perempuan}
-  const kthMap = new Map();     // kth_name → {agr, tbw}
+  try {
+    const csvText = await fetch(CSV_PROXY).then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    });
+    const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+    rows = parsed.data;
+    csvHeaders = parsed.meta.fields || [];
+    csvOk = rows.length > 0;
+  } catch(e) {
+    console.warn('CSV fetch failed:', e);
+  }
+
+  setMsg('Memproses data…');
+
+  // ── Detect column letter positions from header row ──────────
+  // Google Sheets sometimes exports with letter-named columns or actual headers
+  // We'll map header names to indices and also try letter keys
+  const colIdx = {}; // header name → index
+  csvHeaders.forEach((h, i) => { colIdx[h] = i; });
+
+  // Helper: get cell value by header name or fallback to positional index
+  const cell = (row, name, idx) => {
+    if (row[name] !== undefined) return String(row[name] || '').trim();
+    // Try position-based access
+    const vals = Object.values(row);
+    if (idx !== undefined && vals[idx] !== undefined) return String(vals[idx] || '').trim();
+    return '';
+  };
+
+  // ── Build CSV lookup maps ────────────────────────────────────
+  // Map: Kode Petak (col M = index 12) → row
+  const csvByKode = new Map();
+  // Map: Nama Petani (col C = index 2) → row (for popup enrichment)
+  const csvByNama = new Map();
+
+  let totalHaCSV = 0;
+  let agrRegHa = 0, agrBpoHa = 0, tbwRegHa = 0, tbwMtlHa = 0;
+  const uniqueMembers = new Map(); // name → gender
+  const kthMap = new Map(); // kth name → stats
 
   rows.forEach(row => {
-    // column G = index 6 (0-based), header "Luas"
-    const luasVal = parseFloat(
-      (row['G'] || row['Luas'] || Object.values(row)[6] || '').toString().replace(',', '.')
-    );
-    if (!isNaN(luasVal)) totalHa += luasVal;
+    const vals = Object.values(row);
 
-    // program
-    const prog = getProgram(row);
-    if (prog) {
-      if (prog.prog === 'agrReg') agrRegHa += prog.ha;
-      if (prog.prog === 'agrBpo') agrBpoHa += prog.ha;
-      if (prog.prog === 'tbwReg') tbwRegHa += prog.ha;
-      if (prog.prog === 'tbwMtl') tbwMtlHa += prog.ha;
+    // Kode Petak: column M (0-based index 12)
+    const kode = cell(row, 'Kode Petak', 12) || cell(row, 'M', 12);
+    if (kode) csvByKode.set(kode, row);
+
+    // Luas: column G (index 6)
+    const luasRaw = cell(row, 'Luas', 6) || cell(row, 'G', 6);
+    const luas = parseFloat(luasRaw.replace(',', '.'));
+    if (!isNaN(luas) && luas > 0) totalHaCSV += luas;
+
+    // Sub-program from R/S/T/U
+    // Find R=index17, S=18, T=19, U=20 or by letter header
+    const getRSTV = (letterKey, fallbackIdx) => {
+      const v = cell(row, letterKey, fallbackIdx);
+      const n = parseFloat(v.replace(',', '.'));
+      return (!isNaN(n) && n > 0) ? n : 0;
+    };
+    const R = getRSTV('R', 17);
+    const S = getRSTV('S', 18);
+    const T = getRSTV('T', 19);
+    const U = getRSTV('U', 20);
+
+    let subProg = null;
+    if (S > 0)      subProg = { key: 'agrBpo', ha: S };
+    else if (R > 0) subProg = { key: 'agrReg', ha: R };
+    else if (T > 0) subProg = { key: 'tbwReg', ha: T };
+    else if (U > 0) subProg = { key: 'tbwMtl', ha: U };
+
+    if (subProg) {
+      if (subProg.key === 'agrReg') agrRegHa += subProg.ha;
+      if (subProg.key === 'agrBpo') agrBpoHa += subProg.ha;
+      if (subProg.key === 'tbwReg') tbwRegHa += subProg.ha;
+      if (subProg.key === 'tbwMtl') tbwMtlHa += subProg.ha;
     }
 
-    // anggota – column for name varies; try common headers
-    const namaPetani = (
-      row['Nama Petani'] || row['Nama'] || Object.values(row)[2] || ''
-    ).toString().trim();
-
-    if (namaPetani && !uniqueNames.has(namaPetani)) {
-      // gender: col I = index 8, col J = index 9
-      const colI = parseFloat((row['I'] || Object.values(row)[8] || '').toString().trim());
-      const colJ = parseFloat((row['J'] || Object.values(row)[9] || '').toString().trim());
+    // Anggota: col C (index 2)
+    const nama = cell(row, 'Nama Petani', 2) || cell(row, 'Nama', 2) || cell(row, 'C', 2);
+    if (nama && !uniqueMembers.has(nama)) {
+      // Gender: col I (index 8) = laki, col J (index 9) = perempuan
+      const colI = parseFloat(cell(row, 'I', 8).replace(',','.'));
+      const colJ = parseFloat(cell(row, 'J', 9).replace(',','.'));
       const gender = colI === 1 ? 'L' : colJ === 1 ? 'P' : '?';
-      uniqueNames.set(namaPetani, gender);
+      uniqueMembers.set(nama, gender);
+      csvByNama.set(nama, row);
     }
 
-    // KTH – try column header "KTH" or "Nama KTH"
+    // KTH: col D or E (try index 3 and 4)
     const kthName = (
-      row['KTH'] || row['Nama KTH'] || row['Kelompok Tani'] || Object.values(row)[3] || 'Lainnya'
-    ).toString().trim();
-
-    if (!kthMap.has(kthName)) kthMap.set(kthName, { agr: 0, tbw: 0, luas: 0 });
+      cell(row, 'KTH', 3) || cell(row, 'Nama KTH', 3) ||
+      cell(row, 'Kelompok Tani Hutan', 3) || cell(row, 'D', 3) || 'Lainnya'
+    );
+    if (!kthMap.has(kthName)) kthMap.set(kthName, { agr: 0, tbw: 0, total: 0 });
     const k = kthMap.get(kthName);
-    if (!isNaN(luasVal)) k.luas += luasVal;
-    if (prog) {
-      if (prog.prog === 'agrReg' || prog.prog === 'agrBpo') k.agr += prog.ha;
-      if (prog.prog === 'tbwReg' || prog.prog === 'tbwMtl') k.tbw += prog.ha;
+    if (!isNaN(luas) && luas > 0) k.total += luas;
+    if (subProg) {
+      if (subProg.key === 'agrReg' || subProg.key === 'agrBpo') k.agr += subProg.ha;
+      if (subProg.key === 'tbwReg' || subProg.key === 'tbwMtl') k.tbw += subProg.ha;
     }
   });
 
-  const TARGET_HA  = 2000;
-  const agrTotal   = agrRegHa + agrBpoHa;
-  const tbwTotal   = tbwRegHa + tbwMtlHa;
-  const totalReg   = totalHa;
-  const pct        = Math.min(100, (totalReg / TARGET_HA * 100)).toFixed(1);
-  const laki       = [...uniqueNames.values()].filter(g => g === 'L').length;
-  const perempuan  = [...uniqueNames.values()].filter(g => g === 'P').length;
+  // ── Totals ────────────────────────────────────────────────────
+  // If CSV didn't load, use Luas from JSON as fallback
+  let totalHa = totalHaCSV;
+  if (!csvOk) {
+    totalHa = agroGeo.features.reduce((s, f) => s + (f.properties?.Luas || 0), 0);
+  }
+  const agrTotal = agrRegHa + agrBpoHa;
+  const tbwTotal = tbwRegHa + tbwMtlHa;
+  const pct = Math.min(100, totalHa / TARGET_HA * 100);
+  const laki = [...uniqueMembers.values()].filter(g => g === 'L').length;
+  const perempuan = [...uniqueMembers.values()].filter(g => g === 'P').length;
 
-  /* ── Render Stats ────────────────────────────────── */
-  document.getElementById('statTotalHa').textContent  = fmt(totalHa) + ' ha';
-  document.getElementById('statTotalSub').textContent = `dari ${TARGET_HA.toLocaleString('id-ID')} ha luas area eligible`;
-  document.getElementById('statPct').textContent      = pct + '%';
-  document.getElementById('progFill').style.width     = pct + '%';
+  // ── Render Stats ──────────────────────────────────────────────
+  document.getElementById('sTotalHa').textContent  = fmt(totalHa) + ' ha';
+  document.getElementById('sTotalSub').textContent = `dari ${fmtN(TARGET_HA)} ha area eligible`;
+  document.getElementById('sPct').textContent      = pct.toFixed(1) + '%';
+  document.getElementById('sProgFill').style.width = pct + '%';
 
-  document.getElementById('statAgrHa').textContent    = fmt(agrTotal) + ' ha';
-  document.getElementById('statAgrBreak').innerHTML   = `
-    <div class="breakdown-item"><span><span class="dot" style="background:var(--agr-bpo)"></span>BPO</span><b>${fmt(agrBpoHa)} ha</b></div>
-    <div class="breakdown-item"><span><span class="dot" style="background:var(--agr-reg)"></span>Reguler</span><b>${fmt(agrRegHa)} ha</b></div>`;
+  document.getElementById('sAgrHa').textContent = fmt(agrTotal) + ' ha';
+  document.getElementById('sAgrBk').innerHTML = `
+    <div class="bk-row"><span><span class="dot" style="background:var(--agr-bpo)"></span>BPO</span><b>${fmt(agrBpoHa)} ha</b></div>
+    <div class="bk-row"><span><span class="dot" style="background:var(--agr-reg)"></span>Reguler</span><b>${fmt(agrRegHa)} ha</b></div>`;
 
-  document.getElementById('statTbwHa').textContent    = fmt(tbwTotal) + ' ha';
-  document.getElementById('statTbwBreak').innerHTML   = `
-    <div class="breakdown-item"><span><span class="dot" style="background:var(--tbw-reg)"></span>Reguler</span><b>${fmt(tbwRegHa)} ha</b></div>
-    <div class="breakdown-item"><span><span class="dot" style="background:var(--tbw-mtl)"></span>MTL</span><b>${fmt(tbwMtlHa)} ha</b></div>`;
+  document.getElementById('sTbwHa').textContent = fmt(tbwTotal) + ' ha';
+  document.getElementById('sTbwBk').innerHTML = `
+    <div class="bk-row"><span><span class="dot" style="background:var(--tbw-reg)"></span>Reguler</span><b>${fmt(tbwRegHa)} ha</b></div>
+    <div class="bk-row"><span><span class="dot" style="background:var(--tbw-mtl)"></span>MTL</span><b>${fmt(tbwMtlHa)} ha</b></div>`;
 
-  document.getElementById('statLaki').textContent     = laki.toLocaleString('id-ID');
-  document.getElementById('statPerempuan').textContent = perempuan.toLocaleString('id-ID');
-  document.getElementById('statTotal').textContent    = `Total ${uniqueNames.size.toLocaleString('id-ID')} anggota`;
+  document.getElementById('sLaki').textContent      = fmtN(laki);
+  document.getElementById('sPerempuan').textContent = fmtN(perempuan);
+  document.getElementById('sAnggota').textContent   = `Total ${fmtN(uniqueMembers.size)} anggota`;
 
-  /* ── KTH List ────────────────────────────────────── */
+  // ── Render KTH ────────────────────────────────────────────────
   const kthEl = document.getElementById('kthList');
-  kthEl.innerHTML = '';
-  [...kthMap.entries()]
-    .sort((a, b) => b[1].luas - a[1].luas)
-    .forEach(([name, data]) => {
-      const total   = data.agr + data.tbw || 1;
-      const agrPct  = Math.round(data.agr / total * 100);
-      const tbwPct  = 100 - agrPct;
+  const kthEntries = [...kthMap.entries()].filter(([n,d]) => n !== 'Lainnya' || d.total > 0).sort((a,b) => b[1].total - a[1].total);
+
+  if (kthEntries.length === 0) {
+    kthEl.innerHTML = `<div class="kth-empty">Data KTH tidak tersedia</div>`;
+  } else {
+    kthEl.innerHTML = '';
+    kthEntries.forEach(([name, d]) => {
+      const total = d.agr + d.tbw || 1;
+      const ap = Math.round(d.agr / total * 100);
+      const tp = 100 - ap;
       const el = document.createElement('div');
       el.className = 'kth-item';
       el.innerHTML = `
-        <div class="kth-header">
-          <div>
-            <div class="kth-name">${name}</div>
-          </div>
-          <div class="kth-ha">${fmt(data.luas)} ha</div>
+        <div class="kth-top">
+          <span class="kth-name">${name}</span>
+          <span class="kth-ha">${fmt(d.total)} ha</span>
         </div>
         <div class="kth-bars">
-          <div class="kth-bar-item">
-            <div class="kth-bar-lbl"><span>Agroforestri</span><span>${fmt(data.agr)} ha (${agrPct}%)</span></div>
-            <div class="kth-bar-track"><div class="kth-bar-fill" style="width:${agrPct}%;background:var(--agr)"></div></div>
+          <div class="kbar">
+            <div class="kbar-top"><span>Agroforestri</span><span>${fmt(d.agr)} ha · ${ap}%</span></div>
+            <div class="kbar-track"><div class="kbar-fill" style="width:${ap}%;background:var(--agr)"></div></div>
           </div>
-          <div class="kth-bar-item">
-            <div class="kth-bar-lbl"><span>Tembawang</span><span>${fmt(data.tbw)} ha (${tbwPct}%)</span></div>
-            <div class="kth-bar-track"><div class="kth-bar-fill" style="width:${tbwPct}%;background:var(--tbw)"></div></div>
+          <div class="kbar">
+            <div class="kbar-top"><span>Tembawang</span><span>${fmt(d.tbw)} ha · ${tp}%</span></div>
+            <div class="kbar-track"><div class="kbar-fill" style="width:${tp}%;background:var(--tbw)"></div></div>
           </div>
         </div>`;
       kthEl.appendChild(el);
     });
-
-  /* ── Build CSV lookup by Kode Petak ─────────────── */
-  const csvByKode = new Map();
-  rows.forEach(row => {
-    // column M = index 12, header varies
-    const kode = (
-      row['M'] || row['Kode Petak'] || Object.values(row)[12] || ''
-    ).toString().trim();
-    if (kode) csvByKode.set(kode, row);
-  });
-
-  /* ── GeoJSON helpers ─────────────────────────────── */
-  function getFeatureColor(feature) {
-    const id = (feature.properties?.id_lahan || '').toString().trim();
-    const row = csvByKode.get(id);
-    if (!row) return '#aaa';
-    const prog = getProgram(row);
-    if (!prog) return '#aaa';
-    return COLOR[prog.prog] || '#aaa';
   }
 
-  function featureStyle(feature) {
-    return {
-      fillColor: getFeatureColor(feature),
-      fillOpacity: 0.72,
-      color: '#fff',
-      weight: 1.2,
-    };
-  }
+  // ── Classify each GeoJSON feature ────────────────────────────
+  // Strategy: try match id_lahan → CSV kode petak first,
+  // fallback to Nama → CSV nama, fallback to JSON Program field
+  function classifyFeature(feature) {
+    const p = feature.properties || {};
+    const id = (p.id_lahan || '').trim();
+    const namaJson = (p.Nama || '').trim();
+    const progJson = (p.Program || '').trim();
 
-  function buildPopup(feature) {
-    const id  = (feature.properties?.id_lahan || '').toString().trim();
-    const row = csvByKode.get(id);
-    const p   = feature.properties || {};
-
-    const progMap = { agrReg: 'Agroforestri Reguler', agrBpo: 'Agroforestri BPO', tbwReg: 'Tembawang Reguler', tbwMtl: 'Tembawang MTL' };
-    const progColorMap = { agrReg: 'var(--agr-reg)', agrBpo: 'var(--agr-bpo)', tbwReg: 'var(--tbw-reg)', tbwMtl: 'var(--tbw-mtl)' };
-
-    let progLabel = '—', progColor = '#aaa';
-    if (row) {
-      const pg = getProgram(row);
-      if (pg) { progLabel = progMap[pg.prog] || pg.prog; progColor = progColorMap[pg.prog] || '#aaa'; }
+    // 1. Match by id_lahan → Kode Petak
+    if (id && csvByKode.has(id)) {
+      const row = csvByKode.get(id);
+      const vals = Object.values(row);
+      const R = parseFloat((vals[17] || '').toString().replace(',','.')); 
+      const S = parseFloat((vals[18] || '').toString().replace(',','.')); 
+      const T = parseFloat((vals[19] || '').toString().replace(',','.'));
+      const U = parseFloat((vals[20] || '').toString().replace(',','.'));
+      if (S > 0) return { key: 'agrBpo', row };
+      if (R > 0) return { key: 'agrReg', row };
+      if (T > 0) return { key: 'tbwReg', row };
+      if (U > 0) return { key: 'tbwMtl', row };
     }
 
-    // Try to read useful columns from CSV row
-    const val = (keys) => {
-      if (!row) return '—';
-      for (const k of keys) {
-        const v = (row[k] || '').toString().trim();
-        if (v) return v;
+    // 2. Match by Nama
+    if (namaJson && csvByNama.has(namaJson)) {
+      const row = csvByNama.get(namaJson);
+      const vals = Object.values(row);
+      const R = parseFloat((vals[17] || '').toString().replace(',','.')); 
+      const S = parseFloat((vals[18] || '').toString().replace(',','.')); 
+      const T = parseFloat((vals[19] || '').toString().replace(',','.'));
+      const U = parseFloat((vals[20] || '').toString().replace(',','.'));
+      if (S > 0) return { key: 'agrBpo', row };
+      if (R > 0) return { key: 'agrReg', row };
+      if (T > 0) return { key: 'tbwReg', row };
+      if (U > 0) return { key: 'tbwMtl', row };
+    }
+
+    // 3. Fallback: classify by JSON Program text
+    const fallKey = classifyByJsonProgram(progJson);
+    if (fallKey) return { key: fallKey, row: null };
+
+    return null;
+  }
+
+  // Build popup HTML
+  function buildPopup(feature, classified) {
+    const p   = feature.properties || {};
+    const row = classified?.row;
+    const key = classified?.key;
+    const c   = COLOR[key] || '#888';
+    const lb  = LABEL[key] || 'Tidak Diketahui';
+
+    const get = (keys, fallbackIdx) => {
+      if (row) {
+        const vals = Object.values(row);
+        for (const k of keys) {
+          const v = (row[k] || '').toString().trim();
+          if (v) return v;
+        }
+        if (fallbackIdx !== undefined) {
+          const v = (vals[fallbackIdx] || '').toString().trim();
+          if (v) return v;
+        }
       }
-      return '—';
+      return null;
     };
 
-    const namaPemilik  = val(['Nama Petani', 'Nama', 'Pemilik']);
-    const kodePerilaku = val(['M', 'Kode Petak']) || id;
-    const luasHa       = val(['G', 'Luas']);
-    const desa         = val(['Desa', 'Nama Desa']);
-    const kecamatan    = val(['Kecamatan']);
-    const kth          = val(['KTH', 'Nama KTH', 'Kelompok Tani']);
-    const tanaman      = val(['Rencana Tanam', 'Tanaman', 'Rencana Penanaman']);
+    const nama   = get(['Nama Petani','Nama','C'], 2) || p.Nama || '—';
+    const id     = p.id_lahan || get(['Kode Petak','M'], 12) || '—';
+    const luas   = get(['Luas','G'], 6) || (p.Luas ? fmt(p.Luas) : '—');
+    const desa   = get(['Desa','Nama Desa'], 5) || '—';
+    const kec    = get(['Kecamatan'], 6) || '—';
+    const kth    = get(['KTH','Nama KTH','Kelompok Tani Hutan','D'], 3) || '—';
+    const komp   = p.Komparteme?.trim() || '—';
 
-    return `<div class="popup-wrap">
-      <span class="popup-badge" style="background:${progColor}20;color:${progColor}">${progLabel}</span>
-      <div class="popup-title">${namaPemilik !== '—' ? namaPemilik : ('ID: ' + id)}</div>
-      <table class="popup-table">
-        <tr><td>ID Lahan</td><td>${kodePerilaku}</td></tr>
-        <tr><td>Luas</td><td>${luasHa} ha</td></tr>
+    return `<div class="pu">
+      <div class="pu-badge" style="background:${c}18;color:${c}">
+        <span class="dot" style="background:${c}"></span>${lb}
+      </div>
+      <div class="pu-name">${nama}</div>
+      <table class="pu-tbl">
+        <tr><td>ID Lahan</td><td>${id}</td></tr>
+        <tr><td>Kompartemen</td><td>${komp}</td></tr>
+        <tr><td>Luas</td><td>${luas} ha</td></tr>
         ${desa !== '—' ? `<tr><td>Desa</td><td>${desa}</td></tr>` : ''}
-        ${kecamatan !== '—' ? `<tr><td>Kecamatan</td><td>${kecamatan}</td></tr>` : ''}
-        ${kth !== '—' ? `<tr><td>KTH</td><td>${kth}</td></tr>` : ''}
-        ${tanaman !== '—' ? `<tr><td>Tanaman</td><td>${tanaman}</td></tr>` : ''}
+        ${kec  !== '—' ? `<tr><td>Kecamatan</td><td>${kec}</td></tr>` : ''}
+        ${kth  !== '—' ? `<tr><td>KTH</td><td>${kth}</td></tr>` : ''}
       </table>
     </div>`;
   }
 
-  /* Split agroGeo features into 4 sub-layers */
-  function makeSubLayer(progKey) {
-    const features = (agroGeo.features || []).filter(f => {
-      const id  = (f.properties?.id_lahan || '').toString().trim();
-      const row = csvByKode.get(id);
-      if (!row) return false;
-      const pg = getProgram(row);
-      return pg && pg.prog === progKey;
-    });
-    const geojson = { type: 'FeatureCollection', features };
-    return L.geoJSON(geojson, {
-      style: featureStyle,
+  // ── Build 4 sub-layers ────────────────────────────────────────
+  const buckets = { agrReg: [], agrBpo: [], tbwReg: [], tbwMtl: [] };
+
+  agroGeo.features.forEach(f => {
+    const cl = classifyFeature(f);
+    if (cl && buckets[cl.key]) {
+      buckets[cl.key].push({ feature: f, classified: cl });
+    }
+  });
+
+  Object.keys(buckets).forEach(key => {
+    const fc = { type: 'FeatureCollection', features: buckets[key].map(b => b.feature) };
+    const clMap = new Map(buckets[key].map(b => [b.feature, b.classified]));
+
+    gLayers[key] = L.geoJSON(fc, {
+      style: {
+        fillColor: COLOR[key],
+        fillOpacity: 0.75,
+        color: '#fff',
+        weight: 1.5,
+      },
       onEachFeature(feature, layer) {
-        layer.bindPopup(buildPopup(feature), { maxWidth: 280, className: '' });
-        layer.on('mouseover', function() { this.setStyle({ fillOpacity: 0.95, weight: 2 }); });
-        layer.on('mouseout',  function() { this.setStyle({ fillOpacity: 0.72, weight: 1.2 }); });
-        layer.on('click', function(e) { this.openPopup(); });
+        const cl = clMap.get(feature);
+        layer.bindPopup(buildPopup(feature, cl), { maxWidth: 260 });
+        layer.on('mouseover', () => layer.setStyle({ fillOpacity: 1, weight: 2, color: '#333' }));
+        layer.on('mouseout',  () => layer.setStyle({ fillOpacity: 0.75, weight: 1.5, color: '#fff' }));
       }
-    });
-  }
+    }).addTo(map);
+  });
 
-  layers.agrReg = makeSubLayer('agrReg');
-  layers.agrBpo = makeSubLayer('agrBpo');
-  layers.tbwReg = makeSubLayer('tbwReg');
-  layers.tbwMtl = makeSubLayer('tbwMtl');
-
-  Object.values(layers).forEach(l => l && map.addLayer(l));
-
-  // Batas layer (no popup)
-  layers.batas = L.geoJSON(batasGeo, {
-    style: { color: '#555', weight: 1.5, dashArray: '5 4', fillOpacity: 0, opacity: 0.6 }
+  // ── Batas layer (no popup) ────────────────────────────────────
+  gLayers.batas = L.geoJSON(batasGeo, {
+    style: { color: '#666', weight: 2, dashArray: '6 4', fillOpacity: 0, opacity: 0.55 }
   }).addTo(map);
 
-  // Fit map to agro layer
-  const allFeatures = [layers.agrReg, layers.agrBpo, layers.tbwReg, layers.tbwMtl].filter(Boolean);
-  const bounds = allFeatures.map(l => {
-    try { return l.getBounds(); } catch(e) { return null; }
-  }).filter(Boolean);
-  if (bounds.length) {
-    const combined = bounds.reduce((a, b) => a.extend(b));
-    map.fitBounds(combined, { padding: [20, 20] });
-  } else {
-    // fallback: try batas layer
-    try { map.fitBounds(layers.batas.getBounds(), { padding: [20, 20] }); } catch(e) {}
+  // ── Fit bounds ────────────────────────────────────────────────
+  const boundsArr = Object.values(gLayers)
+    .filter(l => l)
+    .map(l => { try { return l.getBounds(); } catch(e) { return null; } })
+    .filter(b => b && b.isValid());
+
+  if (boundsArr.length) {
+    const combined = boundsArr.reduce((acc, b) => acc.extend(b));
+    map.fitBounds(combined, { padding: [24, 24] });
   }
 
-  /* KTH click → zoom */
-  [...document.querySelectorAll('.kth-item')].forEach((el, i) => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.kth-item').forEach(e => e.classList.remove('active'));
-      el.classList.add('active');
-    });
-  });
+  // ── Status badge ──────────────────────────────────────────────
+  const badge = document.getElementById('statusBadge');
+  if (csvOk) {
+    badge.textContent = `${rows.length} baris data · ${agroGeo.features.length} fitur`;
+    badge.className = 'ok';
+  } else {
+    badge.textContent = 'CSV tidak dapat dimuat – tampil sebagian';
+    badge.className = 'err';
+  }
 
   document.getElementById('loading').style.display = 'none';
 }
 
 main().catch(err => {
   console.error(err);
-  document.getElementById('loading').innerHTML =
-    '<p style="color:red;font-size:.85rem">Gagal memuat data. Periksa koneksi atau URL data.</p>';
+  const el = document.getElementById('loading');
+  el.innerHTML = `
+    <div style="text-align:center;padding:20px;max-width:400px">
+      <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
+      <p style="font-weight:600;margin-bottom:6px">Gagal memuat data</p>
+      <p style="font-size:.75rem;color:#6b7668;margin-bottom:14px">${err.message}</p>
+      <button onclick="location.reload()" style="padding:8px 18px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:.8rem">Coba Lagi</button>
+    </div>`;
 });
 </script>
 </body>
