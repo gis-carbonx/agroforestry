@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIG Lahan Garapan Masyarakat</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #f4f6f0;
+      --surface: #ffffff;
+      --surface2: #f8faf5;
+      --border: #e2e8d8;
+      --text-primary: #1a2614;
+      --text-secondary: #5a6b50;
+      --text-muted: #8fa07a;
+
+      /* Program colors */
+      --agr-bpo: #4caf6f;      /* Agroforestri BPO - medium green */
+      --agr-reg: #a8d878;      /* Agroforestri Reguler - light green */
+      --tbw-reg: #e88c3a;      /* Tembawang Reguler - orange */
+      --tbw-mtl: #f5c842;      /* Tembawang MTL - yellow */
+
+      --agr-bpo-bg: #e8f5ee;
+      --agr-reg-bg: #f0f9e4;
+      --tbw-reg-bg: #fef0e2;
+      --tbw-mtl-bg: #fefbe2;
+
+      --accent: #3a7d44;
+      --accent-light: #e8f4eb;
+
+      --shadow-sm: 0 1px 3px rgba(26,38,20,0.08);
+      --shadow-md: 0 4px 16px rgba(26,38,20,0.10);
+      --shadow-lg: 0 8px 32px rgba(26,38,20,0.14);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #4caf6f, #2d7a40);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .brand-text h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+    .btn-icon:hover { background: var(--bg); color: var(--accent); }
+
+    .admin-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      background: var(--surface);
+      transition: all 0.15s;
+    }
+    .admin-badge:hover { border-color: var(--accent); color: var(--accent); }
+    .admin-avatar {
+      width: 22px;
+      height: 22px;
+      background: var(--accent-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    /* ── STAT CARDS ── */
+    .stats-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: grid;
+      grid-template-columns: 220px 1fr 1fr 200px;
+      gap: 0;
+    }
+
+    .stat-card {
+      padding: 0 24px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-card:first-child { padding-left: 0; }
+    .stat-card:last-child { border-right: none; }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 4px;
+      overflow: hidden;
+    }
+
+    .stat-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #7bc67e);
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    .stat-pct {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Sub-stats */
+    .stat-rows { display: flex; flex-direction: column; gap: 4px; }
+    .stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    .stat-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+      flex-shrink: 0;
+    }
+
+    .stat-row-val { font-weight: 600; color: var(--text-primary); }
+
+    /* Members stat */
+    .member-grid {
+      display: flex;
+      gap: 16px;
+      margin-top: 6px;
+    }
+    .member-item { text-align: center; }
+    .member-count {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      line-height: 1;
+    }
+    .member-count.male { color: #3a7de0; }
+    .member-count.female { color: #d45fa0; }
+    .member-type {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .member-total {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+    .member-icon { font-size: 14px; }
+
+    /* ── MAIN LAYOUT ── */
+    .main {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      flex: 1;
+      min-height: 0;
+      height: calc(100vh - 60px - 90px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kth-count {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .kth-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      max-height: 350px;
+    }
+
+    .kth-item {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--surface2);
+    }
+
+    .kth-item:hover, .kth-item.active {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .kth-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .kth-info { flex: 1; }
+
+    .kth-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .kth-location {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .kth-area {
+      font-family: 'DM Serif Display', serif;
+      font-size: 16px;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .kth-breakdown {
+      display: flex;
+      gap: 8px;
+    }
+
+    .kth-tag {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .kth-tag.agr { background: var(--agr-bpo-bg); color: #2d7a40; }
+    .kth-tag.tbw { background: var(--tbw-reg-bg); color: #c06020; }
+
+    /* Legend */
+    .legend-section { padding: 16px 20px; }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .legend-swatch.agr-bpo { background: var(--agr-bpo); }
+    .legend-swatch.agr-reg { background: var(--agr-reg); }
+    .legend-swatch.tbw-reg { background: var(--tbw-reg); }
+    .legend-swatch.tbw-mtl { background: var(--tbw-mtl); }
+    .legend-swatch.desa { background: transparent; border: 2px dashed #aaa; border-radius: 2px; }
+
+    /* Layer controls */
+    .layer-section { padding: 0 20px 16px; }
+
+    .layer-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .layer-item:last-child { border-bottom: none; }
+
+    /* Toggle switch */
+    .toggle {
+      position: relative;
+      width: 32px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #ccc;
+      border-radius: 9px;
+      transition: 0.2s;
+    }
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(14px); }
+
+    /* ── MAP AREA ── */
+    #map {
+      flex: 1;
+      position: relative;
+      background: #e8ede0;
+    }
+
+    /* Custom Leaflet overrides */
+    .leaflet-control-zoom {
+      border: none !important;
+      box-shadow: var(--shadow-md) !important;
+    }
+    .leaflet-control-zoom a {
+      background: var(--surface) !important;
+      color: var(--text-primary) !important;
+      border: 1px solid var(--border) !important;
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      font-size: 16px !important;
+      line-height: 28px !important;
+      width: 30px !important;
+      height: 30px !important;
+    }
+    .leaflet-control-zoom a:hover { background: var(--bg) !important; color: var(--accent) !important; }
+
+    /* ── POPUP ── */
+    .leaflet-popup-content-wrapper {
+      border-radius: var(--radius) !important;
+      box-shadow: var(--shadow-lg) !important;
+      padding: 0 !important;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      min-width: 280px;
+      max-width: 340px;
+    }
+    .leaflet-popup-content {
+      margin: 0 !important;
+      width: auto !important;
+    }
+    .leaflet-popup-tip { display: none; }
+    .leaflet-popup-close-button {
+      top: 10px !important;
+      right: 10px !important;
+      color: var(--text-muted) !important;
+      font-size: 18px !important;
+      z-index: 10;
+    }
+
+    .popup-inner { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    .popup-header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .popup-id {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-family: monospace;
+    }
+
+    .popup-program-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+
+    .popup-program-badge.agr-bpo { background: var(--agr-bpo-bg); color: #2d7a40; }
+    .popup-program-badge.agr-reg { background: var(--agr-reg-bg); color: #4a7a20; }
+    .popup-program-badge.tbw-reg { background: var(--tbw-reg-bg); color: #c06020; }
+    .popup-program-badge.tbw-mtl { background: var(--tbw-mtl-bg); color: #a07020; }
+
+    .popup-body { padding: 10px 16px; }
+
+    .popup-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid #f0f2ec;
+      font-size: 12px;
+      gap: 8px;
+    }
+    .popup-row:last-child { border-bottom: none; }
+
+    .popup-key {
+      color: var(--text-muted);
+      flex-shrink: 0;
+      min-width: 110px;
+    }
+
+    .popup-val {
+      color: var(--text-primary);
+      font-weight: 500;
+      text-align: right;
+    }
+
+    .popup-area-badge {
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* ── LOADING ── */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(244, 246, 240, 0.95);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      transition: opacity 0.4s;
+    }
+
+    .loading-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--accent);
+    }
+
+    .loading-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-msg {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── BASEMAP PILLS ── */
+    .basemap-pills {
+      position: absolute;
+      bottom: 24px;
+      left: 16px;
+      z-index: 800;
+      display: flex;
+      gap: 6px;
+    }
+
+    .basemap-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .basemap-pill:hover { transform: translateY(-2px); }
+
+    .basemap-thumb {
+      width: 48px;
+      height: 36px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.15s;
+    }
+
+    .basemap-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .basemap-pill.active .basemap-thumb { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+    .basemap-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    /* ── MINI MAP ── */
+    #minimap {
+      position: absolute;
+      bottom: 24px;
+      right: 16px;
+      width: 120px;
+      height: 80px;
+      border: 2px solid white;
+      border-radius: 6px;
+      box-shadow: var(--shadow-md);
+      z-index: 800;
+      overflow: hidden;
+    }
+
+    /* ── SCALE BAR override ── */
+    .leaflet-control-scale-line {
+      background: rgba(255,255,255,0.85) !important;
+      border: 1px solid var(--border) !important;
+      border-top: 2px solid var(--text-primary) !important;
+      border-radius: 0 0 3px 3px !important;
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      font-size: 10px !important;
+      padding: 1px 5px !important;
+    }
+
+    /* ── Tooltip on hover ── */
+    .leaflet-tooltip {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 6px !important;
+      box-shadow: var(--shadow-md) !important;
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      font-size: 11px !important;
+      color: var(--text-primary) !important;
+      padding: 4px 8px !important;
+    }
+    .leaflet-tooltip-top::before { border-top-color: var(--border) !important; }
+
+    /* Sidebar scrollbar */
+    .kth-list::-webkit-scrollbar { width: 4px; }
+    .kth-list::-webkit-scrollbar-track { background: transparent; }
+    .kth-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+      .main { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+
+    /* Error state */
+    .error-msg {
+      background: #fff3f3;
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #c02020;
+      margin: 8px 20px;
+    }
+
+    /* Search box */
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-size: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-primary);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: var(--accent); }
+
+    /* Filter chip */
+    .filter-chips {
+      display: flex;
+      gap: 4px;
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .filter-chip.all { background: var(--accent); color: white; }
+    .filter-chip.agr-bpo { background: var(--agr-bpo-bg); color: #2d7a40; border-color: var(--agr-bpo); }
+    .filter-chip.agr-reg { background: var(--agr-reg-bg); color: #4a7a20; border-color: var(--agr-reg); }
+    .filter-chip.tbw-reg { background: var(--tbw-reg-bg); color: #c06020; border-color: var(--tbw-reg); }
+    .filter-chip.tbw-mtl { background: var(--tbw-mtl-bg); color: #a07020; border-color: var(--tbw-mtl); }
+    .filter-chip.inactive { opacity: 0.45; }
+
+    /* Info hint */
+    .hint-text {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      padding: 6px 20px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-overlay">
+  <div class="loading-logo">🌿 SIG Lahan</div>
+  <div class="loading-spinner"></div>
+  <div class="loading-msg">Memuat data lahan garapan…</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <div class="brand-icon">🌿</div>
+    <div class="brand-text">
+      <h1>SIG Lahan Garapan Masyarakat</h1>
+      <p>Sebaran Area &amp; Statistik</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-icon" title="Refresh data" onclick="location.reload()">↺</button>
+    <button class="btn-icon" title="Fullscreen" onclick="toggleFullscreen()">⛶</button>
+    <div class="admin-badge">
+      <div class="admin-avatar">👤</div>
+      Admin ▾
+    </div>
+  </div>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="stats-bar">
+  <!-- Total -->
+  <div class="stat-card">
+    <div class="stat-label">Total Lahan Garapan</div>
+    <div class="stat-value" id="stat-total">— ha</div>
+    <div class="stat-sub" id="stat-sub">dari seluruh petak</div>
+    <div class="stat-progress-bar">
+      <div class="stat-progress-fill" id="stat-prog" style="width:5%"></div>
+    </div>
+    <div class="stat-pct" id="stat-pct">Memuat…</div>
+  </div>
+
+  <!-- Agroforestri -->
+  <div class="stat-card">
+    <div class="stat-label">🌱 Agroforestri</div>
+    <div class="stat-value" id="stat-agr">— ha</div>
+    <div class="stat-rows" id="stat-agr-rows">
+      <div class="stat-row">
+        <span><span class="stat-dot" style="background:var(--agr-bpo)"></span>BPO</span>
+        <span class="stat-row-val" id="stat-agr-bpo">— ha</span>
+      </div>
+      <div class="stat-row">
+        <span><span class="stat-dot" style="background:var(--agr-reg)"></span>Reguler</span>
+        <span class="stat-row-val" id="stat-agr-reg">— ha</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tembawang -->
+  <div class="stat-card">
+    <div class="stat-label">🌳 Tembawang</div>
+    <div class="stat-value" id="stat-tbw">— ha</div>
+    <div class="stat-rows">
+      <div class="stat-row">
+        <span><span class="stat-dot" style="background:var(--tbw-reg)"></span>Reguler</span>
+        <span class="stat-row-val" id="stat-tbw-reg">— ha</span>
+      </div>
+      <div class="stat-row">
+        <span><span class="stat-dot" style="background:var(--tbw-mtl)"></span>MTL</span>
+        <span class="stat-row-val" id="stat-tbw-mtl">— ha</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Anggota -->
+  <div class="stat-card">
+    <div class="stat-label">Anggota Terdaftar</div>
+    <div class="member-grid">
+      <div class="member-item">
+        <div class="member-count male"><span class="member-icon">👨</span> <span id="stat-male">—</span></div>
+        <div class="member-type">Laki-laki</div>
+      </div>
+      <div class="member-item">
+        <div class="member-count female"><span class="member-icon">👩</span> <span id="stat-female">—</span></div>
+        <div class="member-type">Perempuan</div>
+      </div>
+    </div>
+    <div class="member-total">Total <strong id="stat-total-member">—</strong> anggota</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <!-- Search -->
+    <div class="search-box">
+      <input class="search-input" type="text" id="search-input" placeholder="Cari nama petani, desa, kode…" oninput="filterKTH()" />
+    </div>
+
+    <!-- Filter chips -->
+    <div class="filter-chips" id="filter-chips">
+      <span class="filter-chip all" onclick="setFilter('all')">Semua</span>
+      <span class="filter-chip agr-bpo" onclick="setFilter('AGR-BPO')">AGR BPO</span>
+      <span class="filter-chip agr-reg" onclick="setFilter('AGR-REG')">AGR Reguler</span>
+      <span class="filter-chip tbw-reg" onclick="setFilter('TBW-REG')">TBW Reguler</span>
+      <span class="filter-chip tbw-mtl" onclick="setFilter('TBW-MTL')">TBW MTL</span>
+    </div>
+
+    <!-- KTH List -->
+    <div class="sidebar-section" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+      <div class="section-title">
+        KTH Terdaftar
+        <span class="kth-count" id="kth-count">—</span>
+      </div>
+      <div class="hint-text">Klik untuk lihat detail dan lokasi</div>
+      <div class="kth-list" id="kth-list">
+        <div style="color:var(--text-muted);font-size:12px;text-align:center;padding:20px;">Memuat data KTH…</div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-section">
+      <div class="section-title" style="margin-bottom:8px;">Legenda</div>
+      <div class="legend-grid">
+        <div class="legend-item"><span class="legend-swatch agr-bpo"></span>AGR BPO</div>
+        <div class="legend-item"><span class="legend-swatch agr-reg"></span>AGR Reguler</div>
+        <div class="legend-item"><span class="legend-swatch tbw-reg"></span>TBW Reguler</div>
+        <div class="legend-item"><span class="legend-swatch tbw-mtl"></span>TBW MTL</div>
+        <div class="legend-item"><span class="legend-swatch desa"></span>Batas Desa</div>
+      </div>
+    </div>
+
+    <!-- Layer controls -->
+    <div class="layer-section">
+      <div class="section-title" style="margin-bottom:8px;">Kontrol Layer</div>
+      <div class="layer-item">
+        <span>Lahan Agroforestri</span>
+        <label class="toggle"><input type="checkbox" id="tog-agr" checked onchange="toggleLayer('agr', this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="layer-item">
+        <span>Lahan Tembawang</span>
+        <label class="toggle"><input type="checkbox" id="tog-tbw" checked onchange="toggleLayer('tbw', this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="layer-item">
+        <span>Label Petak</span>
+        <label class="toggle"><input type="checkbox" id="tog-lbl" onchange="toggleLayer('lbl', this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div style="position:relative; flex:1;">
+    <div id="map" style="width:100%;height:100%;"></div>
+
+    <!-- Basemap pills -->
+    <div class="basemap-pills" id="basemap-pills">
+      <div class="basemap-pill active" onclick="switchBasemap('osm', this)">
+        <div class="basemap-thumb">
+          <img src="https://tile.openstreetmap.org/10/800/512.png" alt="OSM" />
+        </div>
+        <span class="basemap-label">Standar</span>
+      </div>
+      <div class="basemap-pill" onclick="switchBasemap('satellite', this)">
+        <div class="basemap-thumb">
+          <img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/8/100/200" alt="Sat" />
+        </div>
+        <span class="basemap-label">Satelit</span>
+      </div>
+      <div class="basemap-pill" onclick="switchBasemap('topo', this)">
+        <div class="basemap-thumb">
+          <img src="https://tile.opentopomap.org/8/200/100.png" alt="Topo" />
+        </div>
+        <span class="basemap-label">Topografi</span>
+      </div>
+    </div>
+
+    <!-- Minimap -->
+    <div id="minimap"></div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// CONFIGURATION — edit these URLs as needed
+// =============================================
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1ZWVhzR7k27Hb3hHorIfBvkglzRN8PH1YDsk4EUhCgx8/export?format=csv&gid=0';
+const GEOJSON_URL   = 'https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/agro.json';
+
+// =============================================
+// COLOR MAPPING
+// =============================================
+const PROGRAM_COLORS = {
+  'AGR-BPO': { fill: '#4caf6f', stroke: '#2d7a40', cls: 'agr-bpo', label: 'AGR BPO' },
+  'AGR-REG': { fill: '#a8d878', stroke: '#5a9a30', cls: 'agr-reg', label: 'AGR Reguler' },
+  'TBW-REG': { fill: '#e88c3a', stroke: '#b05010', cls: 'tbw-reg', label: 'TBW Reguler' },
+  'TBW-MTL': { fill: '#f5c842', stroke: '#a07010', cls: 'tbw-mtl', label: 'TBW MTL' },
+};
+
+// =============================================
+// STATE
+// =============================================
+let map, minimapMap;
+let sheetData  = [];   // Array of row objects
+let geoData    = null; // GeoJSON FeatureCollection
+let merged     = [];   // Joined data
+let allLayers  = {};   // id_lahan → L.layer
+let layerGroups = { agr: L.layerGroup(), tbw: L.layerGroup(), lbl: L.layerGroup() };
+let kthGroups  = {};   // kth_name → [ row, … ]
+let activeFilter = 'all';
+let activeKTH  = null;
+let baseLayers = {};
+let activeBase = 'osm';
+
+// =============================================
+// INIT
+// =============================================
+document.addEventListener('DOMContentLoaded', init);
+
+async function init() {
+  initMap();
+  try {
+    const [sheet, geo] = await Promise.all([fetchSheet(), fetchGeoJSON()]);
+    sheetData = sheet;
+    geoData   = geo;
+    mergeData();
+    renderStats();
+    renderKTHList();
+    renderMapLayers();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('kth-list').innerHTML =
+      `<div class="error-msg">❌ Gagal memuat data: ${e.message}</div>`;
+  } finally {
+    const ov = document.getElementById('loading-overlay');
+    ov.style.opacity = '0';
+    setTimeout(() => ov.style.display = 'none', 400);
+  }
+}
+
+// =============================================
+// MAP SETUP
+// =============================================
+function initMap() {
+  map = L.map('map', { zoomControl: true, attributionControl: false });
+  map.setView([0, 112], 8);
+
+  baseLayers.osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 19
+  });
+  baseLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri', maxZoom: 19
+  });
+  baseLayers.topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    attribution: 'Map data © OpenTopoMap', maxZoom: 17
+  });
+
+  baseLayers.osm.addTo(map);
+
+  Object.values(layerGroups).forEach(lg => lg.addTo(map));
+
+  L.control.scale({ position: 'bottomright', imperial: false }).addTo(map);
+
+  // Minimap
+  try {
+    minimapMap = L.map('minimap', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(minimapMap);
+    minimapMap.setView([0, 112], 4);
+    map.on('moveend', () => {
+      minimapMap.setView(map.getCenter(), Math.max(map.getZoom() - 5, 1));
+    });
+  } catch(e) { console.warn('Minimap error:', e); }
+}
+
+function switchBasemap(name, el) {
+  Object.values(baseLayers).forEach(l => { if (map.hasLayer(l)) map.removeLayer(l); });
+  baseLayers[name].addTo(map);
+  baseLayers[name].bringToBack();
+  activeBase = name;
+  document.querySelectorAll('.basemap-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// =============================================
+// DATA FETCHING
+// =============================================
+async function fetchSheet() {
+  return new Promise((resolve, reject) => {
+    Papa.parse(SHEET_CSV_URL, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: res => {
+        if (res.errors.length && res.data.length === 0) reject(new Error('CSV parse error'));
+        else resolve(res.data);
+      },
+      error: err => reject(err)
+    });
+  });
+}
+
+async function fetchGeoJSON() {
+  const res = await fetch(GEOJSON_URL);
+  if (!res.ok) throw new Error(`GeoJSON fetch failed: ${res.status}`);
+  return res.json();
+}
+
+// =============================================
+// MERGE & DATA PROCESSING
+// =============================================
+function mergeData() {
+  // Build lookup from GeoJSON by id_lahan
+  const geoById = {};
+  if (geoData && geoData.features) {
+    geoData.features.forEach(f => {
+      const id = f.properties && (f.properties.id_lahan || f.properties.ID_LAHAN || f.properties.Id_Lahan);
+      if (id) geoById[id.trim()] = f;
+    });
+  }
+
+  // Column names from screenshot:
+  // A=No, B=Kompartemen, C=Sub Komp, D=Nama KTH, E=Kode KTH,
+  // F=Kode Intervensi, G=Luas (Ha), H=Nama Petani, I=L, J=P,
+  // K=Desa, L=Dusun, M=Kode Petak, N=Realisasi Tanam (Tanggal),
+  // O=AGR, (P,Q,R,S,T,U) columns for AGR BPO TBW MTL Bibit Gratis Catatan ...
+  // Then INTERVENTION, MoU, BPO M column
+
+  merged = [];
+  kthGroups = {};
+
+  sheetData.forEach(row => {
+    // Get Kode Petak (column M header)
+    const kode = getCol(row, ['Kode Petak', 'kode_petak', 'KODE PETAK', 'M']);
+    if (!kode || !kode.trim()) return;
+
+    const geo = geoById[kode.trim()];
+    // Only include if geo exists
+    if (!geo) return;
+
+    // Determine program class
+    const intervensi = getCol(row, ['Kode Intervensi', 'kode_intervensi', 'KODE INTERVENSI', 'F']) || '';
+    const bpoVal = parseFloat(getCol(row, ['BPO', 'AGR BPO']) || 0);
+    const mtlVal = parseFloat(getCol(row, ['MTL', 'TBW MTL']) || 0);
+
+    let programKey = '';
+    if (intervensi.toUpperCase() === 'AGR') {
+      programKey = bpoVal > 0 ? 'AGR-BPO' : 'AGR-REG';
+    } else if (intervensi.toUpperCase() === 'TBW') {
+      programKey = mtlVal > 0 ? 'TBW-MTL' : 'TBW-REG';
+    } else {
+      programKey = 'AGR-REG'; // fallback
+    }
+
+    const kthName = getCol(row, ['Nama KTH', 'nama_kth', 'D']) || 'Unknown';
+
+    const r = {
+      kode_petak: kode.trim(),
+      nama_petani: getCol(row, ['Nama Petani', 'nama_petani', 'H']) || '—',
+      nama_kth: kthName,
+      kode_kth: getCol(row, ['Kode KTH', 'E']) || '—',
+      kode_intervensi: intervensi,
+      luas: parseFloat(getCol(row, ['Luas (Ha)', 'Luas', 'luas', 'G']) || 0),
+      desa: getCol(row, ['Desa', 'desa', 'K']) || '—',
+      dusun: getCol(row, ['Dusun', 'dusun', 'L']) || '—',
+      kompartemen: getCol(row, ['Kompartemen', 'B']) || '—',
+      sub_komp: getCol(row, ['Sub Komp', 'C']) || '—',
+      realisasi_tanam: getCol(row, ['Realisasi Tanam (Tanggal)', 'Realisasi Tanam', 'N']) || '—',
+      agr_val: parseFloat(getCol(row, ['AGR', 'O']) || 0),
+      bpo_val: bpoVal,
+      tbw_val: parseFloat(getCol(row, ['TBW', 'P', 'R']) || 0),
+      mtl_val: mtlVal,
+      gender_l: getCol(row, ['L', 'I', 'LP']) || '',
+      gender_p: getCol(row, ['P', 'J']) || '',
+      catatan: getCol(row, ['Catatan', 'catatan']) || '',
+      program: programKey,
+      geo: geo
+    };
+
+    merged.push(r);
+
+    if (!kthGroups[kthName]) kthGroups[kthName] = [];
+    kthGroups[kthName].push(r);
+  });
+
+  console.log(`Merged ${merged.length} records from ${Object.keys(kthGroups).length} KTH`);
+}
+
+function getCol(row, candidates) {
+  for (const c of candidates) {
+    if (row[c] !== undefined && row[c] !== null) return row[c];
+  }
+  // Try case-insensitive
+  const keys = Object.keys(row);
+  for (const c of candidates) {
+    const found = keys.find(k => k.toLowerCase().trim() === c.toLowerCase().trim());
+    if (found !== undefined && row[found] !== undefined) return row[found];
+  }
+  return undefined;
+}
+
+// =============================================
+// STATISTICS
+// =============================================
+function renderStats() {
+  let totalHa = 0, agrBpo = 0, agrReg = 0, tbwReg = 0, tbwMtl = 0;
+  let maleCount = 0, femaleCount = 0;
+
+  // Count from all sheetData for members (not just geo-matched)
+  sheetData.forEach(row => {
+    const l = getCol(row, ['L', 'I']) || '';
+    const p = getCol(row, ['P', 'J']) || '';
+    if (l === '1' || l.toString().toLowerCase() === 'l' || l === 'L') maleCount++;
+    if (p === '1' || p.toString().toLowerCase() === 'p' || p === 'P') femaleCount++;
+  });
+
+  merged.forEach(r => {
+    totalHa += r.luas;
+    if (r.program === 'AGR-BPO') agrBpo += r.luas;
+    else if (r.program === 'AGR-REG') agrReg += r.luas;
+    else if (r.program === 'TBW-REG') tbwReg += r.luas;
+    else if (r.program === 'TBW-MTL') tbwMtl += r.luas;
+  });
+
+  const fmtHa = v => v.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ha';
+
+  document.getElementById('stat-total').textContent = fmtHa(totalHa);
+  document.getElementById('stat-sub').textContent = `dari ${merged.length} petak`;
+
+  document.getElementById('stat-agr').textContent = fmtHa(agrBpo + agrReg);
+  document.getElementById('stat-agr-bpo').textContent = fmtHa(agrBpo);
+  document.getElementById('stat-agr-reg').textContent = fmtHa(agrReg);
+
+  document.getElementById('stat-tbw').textContent = fmtHa(tbwReg + tbwMtl);
+  document.getElementById('stat-tbw-reg').textContent = fmtHa(tbwReg);
+  document.getElementById('stat-tbw-mtl').textContent = fmtHa(tbwMtl);
+
+  // Member count — use row count with L=1 / P=1
+  // Alternative: just count unique petani per gender marker
+  // If columns I and J are literal '1', count them
+  // Fallback: count all merged rows
+  let ml = 0, fp = 0;
+  sheetData.forEach(row => {
+    const keys = Object.keys(row);
+    // columns I and J by position index
+    const vals = Object.values(row);
+    const iVal = vals[8] !== undefined ? vals[8].toString().trim() : '';
+    const jVal = vals[9] !== undefined ? vals[9].toString().trim() : '';
+    if (iVal === '1') ml++;
+    if (jVal === '1') fp++;
+  });
+  if (ml === 0 && fp === 0) { ml = maleCount; fp = femaleCount; }
+
+  document.getElementById('stat-male').textContent = ml.toLocaleString('id-ID');
+  document.getElementById('stat-female').textContent = fp.toLocaleString('id-ID');
+  document.getElementById('stat-total-member').textContent = (ml + fp).toLocaleString('id-ID');
+}
+
+// =============================================
+// KTH SIDEBAR LIST
+// =============================================
+function renderKTHList(filter) {
+  const list = document.getElementById('kth-list');
+  const search = (document.getElementById('search-input').value || '').toLowerCase();
+
+  let displayed = 0;
+  const html = Object.entries(kthGroups)
+    .filter(([name, rows]) => {
+      if (search && !name.toLowerCase().includes(search)) return false;
+      if (activeFilter !== 'all') {
+        if (!rows.some(r => r.program === activeFilter)) return false;
+      }
+      return true;
+    })
+    .map(([name, rows]) => {
+      displayed++;
+      const totalArea = rows.reduce((s, r) => s + r.luas, 0);
+      const agrArea = rows.filter(r => r.program.startsWith('AGR')).reduce((s, r) => s + r.luas, 0);
+      const tbwArea = rows.filter(r => r.program.startsWith('TBW')).reduce((s, r) => s + r.luas, 0);
+      const desa = rows[0]?.desa || '—';
+      const pct_agr = totalArea > 0 ? Math.round(agrArea / totalArea * 100) : 0;
+      const pct_tbw = totalArea > 0 ? Math.round(tbwArea / totalArea * 100) : 0;
+
+      const isActive = activeKTH === name;
+
+      return `
+        <div class="kth-item ${isActive ? 'active' : ''}" onclick="focusKTH('${escHtml(name)}')">
+          <div class="kth-header">
+            <div class="kth-info">
+              <div class="kth-name">${escHtml(name)}</div>
+              <div class="kth-location">📍 ${escHtml(desa)} · ${rows.length} petak</div>
+            </div>
+            <div class="kth-area">${totalArea.toFixed(2)} ha</div>
+          </div>
+          <div class="kth-breakdown">
+            ${agrArea > 0 ? `<span class="kth-tag agr">🌱 ${agrArea.toFixed(1)} ha (${pct_agr}%)</span>` : ''}
+            ${tbwArea > 0 ? `<span class="kth-tag tbw">🌳 ${tbwArea.toFixed(1)} ha (${pct_tbw}%)</span>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+  list.innerHTML = html || '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:20px;">Tidak ada data</div>';
+  document.getElementById('kth-count').textContent = displayed;
+}
+
+function filterKTH() { renderKTHList(); }
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.classList.toggle('inactive', !c.classList.contains(f === 'all' ? 'all' : f.toLowerCase().replace('-', '-')));
+  });
+  // re-highlight active chip
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.classList.remove('inactive');
+  });
+  if (f !== 'all') {
+    document.querySelectorAll('.filter-chip').forEach(c => {
+      if (!c.classList.contains('all') && !c.classList.contains(f.toLowerCase().replace('-', '-'))) {
+        c.classList.add('inactive');
+      }
+    });
+  }
+
+  // Filter map layers
+  Object.entries(allLayers).forEach(([id, layer]) => {
+    const row = merged.find(r => r.kode_petak === id);
+    if (!row) return;
+    const inFilter = f === 'all' || row.program === f;
+    const lgroup = row.program.startsWith('AGR') ? layerGroups.agr : layerGroups.tbw;
+    if (inFilter) { if (!lgroup.hasLayer(layer)) lgroup.addLayer(layer); }
+    else { lgroup.removeLayer(layer); }
+  });
+
+  renderKTHList();
+}
+
+function focusKTH(name) {
+  activeKTH = name;
+  const rows = kthGroups[name];
+  if (!rows || rows.length === 0) return;
+
+  // Collect bounds
+  const bounds = [];
+  rows.forEach(r => {
+    const layer = allLayers[r.kode_petak];
+    if (layer) {
+      try { bounds.push(layer.getBounds()); } catch(e) {}
+    }
+  });
+
+  if (bounds.length > 0) {
+    let combined = bounds[0];
+    bounds.forEach(b => { combined = combined.extend(b); });
+    map.fitBounds(combined, { padding: [40, 40] });
+  }
+
+  renderKTHList();
+}
+
+// =============================================
+// MAP LAYERS
+// =============================================
+function renderMapLayers() {
+  layerGroups.agr.clearLayers();
+  layerGroups.tbw.clearLayers();
+  layerGroups.lbl.clearLayers();
+  allLayers = {};
+
+  merged.forEach(row => {
+    const c = PROGRAM_COLORS[row.program] || PROGRAM_COLORS['AGR-REG'];
+    const layer = L.geoJSON(row.geo, {
+      style: {
+        color: c.stroke,
+        weight: 1.5,
+        fillColor: c.fill,
+        fillOpacity: 0.72,
+        opacity: 1
+      }
+    });
+
+    layer.on('mouseover', function(e) {
+      e.target.setStyle({ fillOpacity: 0.9, weight: 2.5 });
+      L.tooltip({ sticky: true, className: 'leaflet-tooltip' })
+        .setContent(`<strong>${row.kode_petak}</strong> — ${row.nama_petani}<br/>${row.luas.toFixed(2)} ha · ${c.label}`)
+        .addTo(map)
+        .setLatLng(e.latlng)
+        .openOn(map);
+    });
+
+    layer.on('mouseout', function(e) {
+      e.target.setStyle({ fillOpacity: 0.72, weight: 1.5 });
+      map.closeTooltip();
+    });
+
+    layer.on('click', function() {
+      map.closePopup();
+      const popup = L.popup({ maxWidth: 340, className: '' })
+        .setLatLng(layer.getBounds().getCenter())
+        .setContent(buildPopupHTML(row))
+        .openOn(map);
+    });
+
+    allLayers[row.kode_petak] = layer;
+
+    if (row.program.startsWith('AGR')) layerGroups.agr.addLayer(layer);
+    else layerGroups.tbw.addLayer(layer);
+  });
+
+  // Fit map to data
+  if (merged.length > 0) {
+    const allBounds = Object.values(allLayers)
+      .map(l => { try { return l.getBounds(); } catch(e) { return null; } })
+      .filter(Boolean);
+
+    if (allBounds.length > 0) {
+      let combined = allBounds[0];
+      allBounds.forEach(b => { combined = combined.extend(b); });
+      map.fitBounds(combined, { padding: [30, 30] });
+      if (minimapMap) minimapMap.setView(combined.getCenter(), 4);
+    }
+  }
+}
+
+function buildPopupHTML(row) {
+  const c = PROGRAM_COLORS[row.program] || PROGRAM_COLORS['AGR-REG'];
+
+  const rows = [
+    ['ID Lahan', `<span style="font-family:monospace;font-size:11px">${row.kode_petak}</span>`],
+    ['Nama Petani', row.nama_petani],
+    ['KTH', row.nama_kth],
+    ['Kode KTH', row.kode_kth],
+    ['Desa / Dusun', `${row.desa}${row.dusun !== '—' ? ' / ' + row.dusun : ''}`],
+    ['Kompartemen', `${row.kompartemen}${row.sub_komp !== '—' ? ' / Sub ' + row.sub_komp : ''}`],
+    ['Luas Lahan', `<span class="popup-area-badge">${row.luas.toFixed(2)} ha</span>`],
+    ['Intervensi', row.kode_intervensi],
+    ['Realisasi Tanam', row.realisasi_tanam],
+  ];
+
+  if (row.bpo_val > 0) rows.push(['BPO', `${row.bpo_val.toFixed(2)} ha`]);
+  if (row.agr_val > 0) rows.push(['Luas AGR', `${row.agr_val.toFixed(2)} ha`]);
+  if (row.tbw_val > 0) rows.push(['Luas TBW', `${row.tbw_val.toFixed(2)} ha`]);
+  if (row.mtl_val > 0) rows.push(['MTL', `${row.mtl_val.toFixed(2)} ha`]);
+  if (row.catatan) rows.push(['Catatan', row.catatan]);
+
+  const tableRows = rows.map(([k, v]) =>
+    `<div class="popup-row"><span class="popup-key">${k}</span><span class="popup-val">${v}</span></div>`
+  ).join('');
+
+  return `
+    <div class="popup-inner">
+      <div class="popup-header">
+        <span class="popup-id">${row.kode_petak}</span>
+        <span class="popup-program-badge ${c.cls}">
+          ${row.program.startsWith('AGR') ? '🌱' : '🌳'} ${c.label}
+        </span>
+      </div>
+      <div class="popup-body">
+        ${tableRows}
+      </div>
+    </div>`;
+}
+
+function toggleLayer(type, visible) {
+  const lg = layerGroups[type];
+  if (!lg) return;
+  if (visible) { if (!map.hasLayer(lg)) lg.addTo(map); }
+  else { map.removeLayer(lg); }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+</script>
+</body>
+</html>
