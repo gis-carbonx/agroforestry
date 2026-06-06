@@ -3,1445 +3,1257 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SIG Lahan Garapan Masyarakat</title>
+  <title>SIG Lahan Garapan Masyarakat – CMI</title>
 
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #f4f6f0;
-      --surface: #ffffff;
-      --surface2: #f8faf5;
-      --border: #e2e8d8;
-      --text-primary: #1a2614;
-      --text-secondary: #5a6b50;
-      --text-muted: #8fa07a;
+      --bg:         #f5f6f5;
+      --surface:    #ffffff;
+      --border:     #e4e7e0;
+      --text:       #1c2118;
+      --text-2:     #5a6455;
+      --text-3:     #9aaa90;
+      --accent:     #2e7d3e;
+      --accent-bg:  #eaf4ec;
 
-      /* Program colors */
-      --agr-bpo: #4caf6f;      /* Agroforestri BPO - medium green */
-      --agr-reg: #a8d878;      /* Agroforestri Reguler - light green */
-      --tbw-reg: #e88c3a;      /* Tembawang Reguler - orange */
-      --tbw-mtl: #f5c842;      /* Tembawang MTL - yellow */
+      --agr-bpo:    #3a9e5f;
+      --agr-reg:    #8dc95e;
+      --tbw-reg:    #e07c2a;
+      --tbw-mtl:    #e8c030;
+      --cmi-border: #1a5c8a;
 
-      --agr-bpo-bg: #e8f5ee;
-      --agr-reg-bg: #f0f9e4;
-      --tbw-reg-bg: #fef0e2;
-      --tbw-mtl-bg: #fefbe2;
-
-      --accent: #3a7d44;
-      --accent-light: #e8f4eb;
-
-      --shadow-sm: 0 1px 3px rgba(26,38,20,0.08);
-      --shadow-md: 0 4px 16px rgba(26,38,20,0.10);
-      --shadow-lg: 0 8px 32px rgba(26,38,20,0.14);
-      --radius: 12px;
-      --radius-sm: 8px;
+      --sh:  0 1px 4px rgba(0,0,0,0.08);
+      --sh2: 0 4px 16px rgba(0,0,0,0.10);
+      --r:   8px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
-      color: var(--text-primary);
-      min-height: 100vh;
+      color: var(--text);
+      height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
     /* ── HEADER ── */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 0 28px;
-      height: 60px;
+      height: 52px;
+      padding: 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+      z-index: 500;
     }
 
-    .header-brand {
+    .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, #4caf6f, #2d7a40);
-      border-radius: 10px;
+    .brand-logo {
+      height: 32px;
+      width: auto;
+      display: block;
+    }
+
+    .brand-logo-fallback {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-    }
-
-    .brand-text h1 {
-      font-family: 'DM Serif Display', serif;
       font-size: 16px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .brand-divider {
+      width: 1px;
+      height: 22px;
+      background: var(--border);
+      margin: 0 2px;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 10.5px;
+      color: var(--text-3);
       font-weight: 400;
-      color: var(--text-primary);
-      letter-spacing: -0.2px;
     }
 
-    .brand-text p {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    .header-actions {
+    .header-nav {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .btn-icon {
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
+    .nav-link {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      color: var(--text-secondary);
-      transition: all 0.15s;
-    }
-    .btn-icon:hover { background: var(--bg); color: var(--accent); }
-
-    .admin-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      gap: 6px;
       padding: 5px 12px;
       border: 1px solid var(--border);
-      border-radius: 20px;
-      font-size: 13px;
-      color: var(--text-secondary);
-      cursor: pointer;
-      background: var(--surface);
-      transition: all 0.15s;
-    }
-    .admin-badge:hover { border-color: var(--accent); color: var(--accent); }
-    .admin-avatar {
-      width: 22px;
-      height: 22px;
-      background: var(--accent-light);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: var(--r);
       font-size: 12px;
+      font-weight: 500;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: all 0.15s;
+      background: var(--surface);
+      cursor: pointer;
     }
 
-    /* ── STAT CARDS ── */
+    .nav-link:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .nav-link svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+
+    /* ── STATS BAR ── */
     .stats-bar {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 14px 28px;
-      display: grid;
-      grid-template-columns: 220px 1fr 1fr 200px;
+      padding: 0 20px;
+      display: flex;
+      align-items: stretch;
       gap: 0;
+      flex-shrink: 0;
+      height: 72px;
     }
 
-    .stat-card {
-      padding: 0 24px;
+    .stat-item {
+      padding: 0 20px;
       border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
     }
-    .stat-card:first-child { padding-left: 0; }
-    .stat-card:last-child { border-right: none; }
+
+    .stat-item:first-child { padding-left: 0; }
+    .stat-item:last-child  { border-right: none; }
 
     .stat-label {
       font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--text-muted);
-      margin-bottom: 6px;
+      letter-spacing: 0.7px;
+      color: var(--text-3);
+      margin-bottom: 4px;
+      white-space: nowrap;
     }
 
     .stat-value {
-      font-family: 'DM Serif Display', serif;
-      font-size: 26px;
+      font-size: 20px;
+      font-weight: 700;
       color: var(--accent);
       line-height: 1;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
 
-    .stat-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
+    .stat-detail {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .stat-progress-bar {
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      margin-bottom: 4px;
-      overflow: hidden;
-    }
-
-    .stat-progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), #7bc67e);
-      border-radius: 2px;
-      transition: width 1s ease;
-    }
-
-    .stat-pct {
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    /* Sub-stats */
-    .stat-rows { display: flex; flex-direction: column; gap: 4px; }
-    .stat-row {
+    .stat-chip {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      font-size: 11.5px;
-      color: var(--text-secondary);
+      gap: 4px;
+      font-size: 10.5px;
+      color: var(--text-2);
+      white-space: nowrap;
     }
 
-    .stat-dot {
-      width: 7px; height: 7px;
+    .dot {
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      display: inline-block;
-      margin-right: 5px;
       flex-shrink: 0;
     }
 
-    .stat-row-val { font-weight: 600; color: var(--text-primary); }
-
-    /* Members stat */
-    .member-grid {
+    .member-row {
       display: flex;
-      gap: 16px;
-      margin-top: 6px;
-    }
-    .member-item { text-align: center; }
-    .member-count {
-      font-family: 'DM Serif Display', serif;
-      font-size: 22px;
-      line-height: 1;
-    }
-    .member-count.male { color: #3a7de0; }
-    .member-count.female { color: #d45fa0; }
-    .member-type {
-      font-size: 10px;
-      color: var(--text-muted);
+      gap: 12px;
       margin-top: 2px;
     }
-    .member-total {
-      font-size: 11px;
-      color: var(--text-secondary);
-      margin-top: 8px;
-    }
-    .member-icon { font-size: 14px; }
 
-    /* ── MAIN LAYOUT ── */
-    .main {
-      display: grid;
-      grid-template-columns: 320px 1fr;
+    .member-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-2);
+    }
+
+    .member-num {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .member-num.m { color: #2563eb; }
+    .member-num.f { color: #db2777; }
+
+    /* ── BODY ── */
+    .body-wrap {
       flex: 1;
-      min-height: 0;
-      height: calc(100vh - 60px - 90px);
+      display: flex;
+      overflow: hidden;
     }
 
     /* ── SIDEBAR ── */
     .sidebar {
+      width: 300px;
       background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      flex-shrink: 0;
     }
 
-    .sidebar-section {
-      padding: 16px 20px;
+    .sidebar-head {
+      padding: 12px 16px 10px;
       border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
-    .section-title {
+    .sidebar-title {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
+      letter-spacing: 0.6px;
+      color: var(--text-3);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 8px;
     }
 
-    .kth-count {
-      background: var(--accent-light);
+    .badge {
+      background: var(--accent-bg);
       color: var(--accent);
       font-size: 10px;
       font-weight: 700;
-      padding: 2px 7px;
+      padding: 1px 7px;
       border-radius: 10px;
     }
 
+    .search-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-input::placeholder { color: var(--text-3); }
+    .search-input:focus { border-color: var(--accent); }
+
     .kth-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      overflow-y: auto;
-      max-height: 350px;
+      gap: 5px;
     }
 
-    .kth-item {
-      padding: 10px 12px;
+    .kth-list::-webkit-scrollbar { width: 3px; }
+    .kth-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .kth-card {
+      padding: 9px 11px;
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border-radius: var(--r);
       cursor: pointer;
-      transition: all 0.15s;
-      background: var(--surface2);
+      transition: all 0.12s;
+      background: var(--surface);
     }
 
-    .kth-item:hover, .kth-item.active {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
+    .kth-card:hover { border-color: var(--accent); background: var(--accent-bg); }
+    .kth-card.active { border-color: var(--accent); background: var(--accent-bg); }
 
-    .kth-header {
+    .kth-row1 {
       display: flex;
-      align-items: flex-start;
       justify-content: space-between;
-      margin-bottom: 6px;
+      align-items: flex-start;
+      margin-bottom: 4px;
     }
-
-    .kth-info { flex: 1; }
 
     .kth-name {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
-      color: var(--text-primary);
+      color: var(--text);
       line-height: 1.3;
     }
 
-    .kth-location {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 1px;
-    }
-
     .kth-area {
-      font-family: 'DM Serif Display', serif;
-      font-size: 16px;
+      font-size: 13px;
+      font-weight: 700;
       color: var(--accent);
-      flex-shrink: 0;
+      white-space: nowrap;
       margin-left: 8px;
     }
 
-    .kth-breakdown {
+    .kth-loc {
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-bottom: 5px;
+    }
+
+    .kth-tags {
       display: flex;
-      gap: 8px;
+      gap: 4px;
+      flex-wrap: wrap;
     }
 
     .kth-tag {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10.5px;
-      padding: 2px 7px;
-      border-radius: 12px;
+      font-size: 10px;
       font-weight: 500;
+      padding: 1px 7px;
+      border-radius: 10px;
     }
 
-    .kth-tag.agr { background: var(--agr-bpo-bg); color: #2d7a40; }
-    .kth-tag.tbw { background: var(--tbw-reg-bg); color: #c06020; }
+    .kth-tag.agr { background: #e6f5ec; color: #1e6b30; }
+    .kth-tag.tbw { background: #fdf0e4; color: #9a4e10; }
 
-    /* Legend */
-    .legend-section { padding: 16px 20px; }
+    /* ── SIDEBAR BOTTOM (legend + layer) ── */
+    .sidebar-bottom {
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      flex-shrink: 0;
+    }
+
+    .sec-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
 
     .legend-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      margin-bottom: 14px;
+      gap: 4px 10px;
+      margin-bottom: 12px;
     }
 
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 7px;
-      font-size: 11.5px;
-      color: var(--text-secondary);
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-2);
     }
 
     .legend-swatch {
-      width: 14px;
-      height: 14px;
+      width: 13px;
+      height: 13px;
       border-radius: 3px;
       flex-shrink: 0;
-      border: 1px solid rgba(0,0,0,0.08);
+      border: 1px solid rgba(0,0,0,0.10);
     }
 
-    .legend-swatch.agr-bpo { background: var(--agr-bpo); }
-    .legend-swatch.agr-reg { background: var(--agr-reg); }
-    .legend-swatch.tbw-reg { background: var(--tbw-reg); }
-    .legend-swatch.tbw-mtl { background: var(--tbw-mtl); }
-    .legend-swatch.desa { background: transparent; border: 2px dashed #aaa; border-radius: 2px; }
+    .legend-swatch.cmi {
+      background: transparent;
+      border: 2px solid var(--cmi-border);
+      border-radius: 2px;
+    }
 
-    /* Layer controls */
-    .layer-section { padding: 0 20px 16px; }
+    .layer-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
 
-    .layer-item {
+    .layer-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 12px;
-      color: var(--text-secondary);
+      font-size: 11.5px;
+      color: var(--text-2);
     }
-    .layer-item:last-child { border-bottom: none; }
 
-    /* Toggle switch */
+    /* Toggle */
     .toggle {
       position: relative;
-      width: 32px;
-      height: 18px;
+      width: 30px;
+      height: 17px;
       cursor: pointer;
+      flex-shrink: 0;
     }
     .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
+    .toggle-track {
       position: absolute;
       inset: 0;
       background: #ccc;
-      border-radius: 9px;
-      transition: 0.2s;
+      border-radius: 8.5px;
+      transition: 0.18s;
     }
-    .toggle-slider:before {
-      content: '';
+    .toggle-thumb {
       position: absolute;
-      width: 12px;
-      height: 12px;
-      left: 3px;
+      width: 11px;
+      height: 11px;
       top: 3px;
+      left: 3px;
       background: white;
       border-radius: 50%;
-      transition: 0.2s;
+      transition: 0.18s;
     }
-    .toggle input:checked + .toggle-slider { background: var(--accent); }
-    .toggle input:checked + .toggle-slider:before { transform: translateX(14px); }
+    .toggle input:checked ~ .toggle-track { background: var(--accent); }
+    .toggle input:checked ~ .toggle-thumb { left: 16px; }
 
-    /* ── MAP AREA ── */
+    /* ── MAP ── */
     #map {
       flex: 1;
       position: relative;
-      background: #e8ede0;
     }
 
-    /* Custom Leaflet overrides */
+    /* Leaflet overrides */
     .leaflet-control-zoom {
       border: none !important;
-      box-shadow: var(--shadow-md) !important;
+      box-shadow: var(--sh2) !important;
     }
     .leaflet-control-zoom a {
-      background: var(--surface) !important;
-      color: var(--text-primary) !important;
-      border: 1px solid var(--border) !important;
-      font-family: 'Plus Jakarta Sans', sans-serif !important;
-      font-size: 16px !important;
+      width: 28px !important;
+      height: 28px !important;
       line-height: 28px !important;
-      width: 30px !important;
-      height: 30px !important;
+      font-size: 15px !important;
+      background: var(--surface) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border) !important;
     }
-    .leaflet-control-zoom a:hover { background: var(--bg) !important; color: var(--accent) !important; }
+    .leaflet-control-zoom a:hover {
+      background: var(--accent-bg) !important;
+      color: var(--accent) !important;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: var(--r) !important;
+      box-shadow: var(--sh2) !important;
+      padding: 0 !important;
+      border: 1px solid var(--border) !important;
+      min-width: 270px;
+      max-width: 320px;
+      overflow: hidden;
+    }
+    .leaflet-popup-content { margin: 0 !important; width: auto !important; }
+    .leaflet-popup-tip-container { display: none; }
+    .leaflet-popup-close-button {
+      top: 9px !important;
+      right: 10px !important;
+      color: var(--text-3) !important;
+      font-size: 17px !important;
+    }
+
+    .leaflet-control-scale-line {
+      font-family: inherit !important;
+      font-size: 10px !important;
+      background: rgba(255,255,255,0.88) !important;
+      border: 1px solid var(--border) !important;
+      border-top: 2px solid var(--text) !important;
+    }
+
+    .leaflet-tooltip {
+      font-family: inherit !important;
+      font-size: 11px !important;
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 5px !important;
+      box-shadow: var(--sh) !important;
+      color: var(--text) !important;
+      padding: 4px 8px !important;
+    }
 
     /* ── POPUP ── */
-    .leaflet-popup-content-wrapper {
-      border-radius: var(--radius) !important;
-      box-shadow: var(--shadow-lg) !important;
-      padding: 0 !important;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      min-width: 280px;
-      max-width: 340px;
-    }
-    .leaflet-popup-content {
-      margin: 0 !important;
-      width: auto !important;
-    }
-    .leaflet-popup-tip { display: none; }
-    .leaflet-popup-close-button {
-      top: 10px !important;
-      right: 10px !important;
-      color: var(--text-muted) !important;
-      font-size: 18px !important;
-      z-index: 10;
-    }
+    .pu { font-family: 'Inter', sans-serif; }
 
-    .popup-inner { font-family: 'Plus Jakarta Sans', sans-serif; }
-
-    .popup-header {
-      padding: 14px 16px 10px;
+    .pu-head {
+      padding: 11px 14px 9px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .popup-id {
+    .pu-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .pu-badge.agr-bpo { background: #e6f5ec; color: #1e6b30; }
+    .pu-badge.agr-reg { background: #f0f9e4; color: #3a6a15; }
+    .pu-badge.tbw-reg { background: #fdf0e4; color: #9a4e10; }
+    .pu-badge.tbw-mtl { background: #fefbe2; color: #7a5500; }
+
+    .pu-id {
       font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-      text-transform: uppercase;
+      color: var(--text-3);
       font-family: monospace;
     }
 
-    .popup-program-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 9px;
-      border-radius: 20px;
-      font-size: 10.5px;
-      font-weight: 600;
-    }
+    .pu-body { padding: 8px 14px 10px; }
 
-    .popup-program-badge.agr-bpo { background: var(--agr-bpo-bg); color: #2d7a40; }
-    .popup-program-badge.agr-reg { background: var(--agr-reg-bg); color: #4a7a20; }
-    .popup-program-badge.tbw-reg { background: var(--tbw-reg-bg); color: #c06020; }
-    .popup-program-badge.tbw-mtl { background: var(--tbw-mtl-bg); color: #a07020; }
-
-    .popup-body { padding: 10px 16px; }
-
-    .popup-row {
+    .pu-row {
       display: flex;
-      align-items: baseline;
       justify-content: space-between;
-      padding: 4px 0;
-      border-bottom: 1px solid #f0f2ec;
-      font-size: 12px;
+      align-items: baseline;
       gap: 8px;
+      padding: 3.5px 0;
+      border-bottom: 1px solid #f2f4ef;
+      font-size: 11.5px;
     }
-    .popup-row:last-child { border-bottom: none; }
+    .pu-row:last-child { border-bottom: none; }
+    .pu-k { color: var(--text-3); flex-shrink: 0; min-width: 100px; }
+    .pu-v { color: var(--text); font-weight: 500; text-align: right; }
+    .pu-area { color: var(--accent); font-weight: 700; font-size: 13px; }
 
-    .popup-key {
-      color: var(--text-muted);
-      flex-shrink: 0;
-      min-width: 110px;
+    /* ── BASEMAP PILLS ── */
+    .basemap-wrap {
+      position: absolute;
+      bottom: 28px;
+      left: 12px;
+      z-index: 800;
+      display: flex;
+      gap: 5px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 5px 6px;
+      box-shadow: var(--sh);
     }
 
-    .popup-val {
-      color: var(--text-primary);
-      font-weight: 500;
-      text-align: right;
+    .bm-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      transition: transform 0.12s;
     }
+    .bm-pill:hover { transform: translateY(-1px); }
 
-    .popup-area-badge {
-      background: var(--accent-light);
-      color: var(--accent);
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 13px;
+    .bm-thumb {
+      width: 42px;
+      height: 30px;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: border-color 0.15s;
+      background: #ddd;
+    }
+    .bm-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .bm-pill.active .bm-thumb { border-color: var(--accent); }
+
+    .bm-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
 
     /* ── LOADING ── */
     #loading-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(244, 246, 240, 0.95);
+      background: rgba(245,246,245,0.96);
       z-index: 9999;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      transition: opacity 0.4s;
+      gap: 14px;
+      transition: opacity 0.35s;
     }
-
-    .loading-logo {
-      font-family: 'DM Serif Display', serif;
-      font-size: 28px;
-      color: var(--accent);
-    }
-
-    .loading-spinner {
-      width: 36px;
-      height: 36px;
+    .ld-spinner {
+      width: 32px; height: 32px;
       border: 3px solid var(--border);
       border-top-color: var(--accent);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.75s linear infinite;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
+    .ld-text { font-size: 13px; color: var(--text-2); }
 
-    .loading-msg {
-      font-size: 13px;
-      color: var(--text-muted);
+    /* MAP LINKS DROPDOWN */
+    .maps-dropdown {
+      position: relative;
     }
-
-    /* ── BASEMAP PILLS ── */
-    .basemap-pills {
+    .maps-menu {
       position: absolute;
-      bottom: 24px;
-      left: 16px;
-      z-index: 800;
-      display: flex;
-      gap: 6px;
-    }
-
-    .basemap-pill {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-
-    .basemap-pill:hover { transform: translateY(-2px); }
-
-    .basemap-thumb {
-      width: 48px;
-      height: 36px;
-      border-radius: 6px;
-      border: 2px solid transparent;
+      top: calc(100% + 6px);
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: var(--sh2);
+      min-width: 220px;
+      z-index: 1000;
+      display: none;
       overflow: hidden;
-      box-shadow: var(--shadow-sm);
-      transition: border-color 0.15s;
     }
-
-    .basemap-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .basemap-pill.active .basemap-thumb { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-
-    .basemap-label {
-      font-size: 9px;
+    .maps-menu.open { display: block; }
+    .maps-menu-title {
+      font-size: 10px;
       font-weight: 600;
-      color: white;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
       text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.5px;
+      color: var(--text-3);
+      padding: 9px 12px 6px;
     }
-
-    /* ── MINI MAP ── */
-    #minimap {
-      position: absolute;
-      bottom: 24px;
-      right: 16px;
-      width: 120px;
-      height: 80px;
-      border: 2px solid white;
-      border-radius: 6px;
-      box-shadow: var(--shadow-md);
-      z-index: 800;
-      overflow: hidden;
-    }
-
-    /* ── SCALE BAR override ── */
-    .leaflet-control-scale-line {
-      background: rgba(255,255,255,0.85) !important;
-      border: 1px solid var(--border) !important;
-      border-top: 2px solid var(--text-primary) !important;
-      border-radius: 0 0 3px 3px !important;
-      font-family: 'Plus Jakarta Sans', sans-serif !important;
-      font-size: 10px !important;
-      padding: 1px 5px !important;
-    }
-
-    /* ── Tooltip on hover ── */
-    .leaflet-tooltip {
-      background: var(--surface) !important;
-      border: 1px solid var(--border) !important;
-      border-radius: 6px !important;
-      box-shadow: var(--shadow-md) !important;
-      font-family: 'Plus Jakarta Sans', sans-serif !important;
-      font-size: 11px !important;
-      color: var(--text-primary) !important;
-      padding: 4px 8px !important;
-    }
-    .leaflet-tooltip-top::before { border-top-color: var(--border) !important; }
-
-    /* Sidebar scrollbar */
-    .kth-list::-webkit-scrollbar { width: 4px; }
-    .kth-list::-webkit-scrollbar-track { background: transparent; }
-    .kth-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .stats-bar { grid-template-columns: 1fr 1fr; }
-      .main { grid-template-columns: 1fr; }
-      .sidebar { display: none; }
-    }
-
-    /* Error state */
-    .error-msg {
-      background: #fff3f3;
-      border: 1px solid #fca5a5;
-      border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      font-size: 12px;
-      color: #c02020;
-      margin: 8px 20px;
-    }
-
-    /* Search box */
-    .search-box {
+    .maps-menu-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .search-input {
-      flex: 1;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 7px 10px;
+      padding: 8px 12px;
       font-size: 12px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      color: var(--text-primary);
-      background: var(--bg);
-      outline: none;
-      transition: border-color 0.15s;
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.12s;
+      border-top: 1px solid var(--border);
     }
-    .search-input::placeholder { color: var(--text-muted); }
-    .search-input:focus { border-color: var(--accent); }
-
-    /* Filter chip */
-    .filter-chips {
-      display: flex;
-      gap: 4px;
-      padding: 8px 20px;
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-
-    .filter-chip {
-      padding: 3px 9px;
-      border-radius: 12px;
-      font-size: 10.5px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.15s;
-    }
-
-    .filter-chip.all { background: var(--accent); color: white; }
-    .filter-chip.agr-bpo { background: var(--agr-bpo-bg); color: #2d7a40; border-color: var(--agr-bpo); }
-    .filter-chip.agr-reg { background: var(--agr-reg-bg); color: #4a7a20; border-color: var(--agr-reg); }
-    .filter-chip.tbw-reg { background: var(--tbw-reg-bg); color: #c06020; border-color: var(--tbw-reg); }
-    .filter-chip.tbw-mtl { background: var(--tbw-mtl-bg); color: #a07020; border-color: var(--tbw-mtl); }
-    .filter-chip.inactive { opacity: 0.45; }
-
-    /* Info hint */
-    .hint-text {
-      font-size: 10.5px;
-      color: var(--text-muted);
-      padding: 6px 20px;
-      font-style: italic;
-    }
+    .maps-menu-item:hover { background: var(--accent-bg); color: var(--accent); }
+    .maps-menu-item span { font-size: 14px; }
   </style>
 </head>
 <body>
 
 <!-- LOADING -->
 <div id="loading-overlay">
-  <div class="loading-logo">🌿 SIG Lahan</div>
-  <div class="loading-spinner"></div>
-  <div class="loading-msg">Memuat data lahan garapan…</div>
+  <div class="ld-spinner"></div>
+  <div class="ld-text">Memuat data lahan garapan…</div>
 </div>
 
 <!-- HEADER -->
 <header>
-  <div class="header-brand">
-    <div class="brand-icon">🌿</div>
+  <div class="brand">
+    <img id="cmi-logo" class="brand-logo" src="https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/logo-cmi.png" alt="CMI" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';" />
+    <div class="brand-logo-fallback" id="logo-fallback" style="display:none">🌿</div>
+    <div class="brand-divider"></div>
     <div class="brand-text">
-      <h1>SIG Lahan Garapan Masyarakat</h1>
-      <p>Sebaran Area &amp; Statistik</p>
+      <div class="brand-title">SIG Lahan Garapan Masyarakat</div>
+      <div class="brand-sub">Sebaran Area &amp; Statistik</div>
     </div>
   </div>
-  <div class="header-actions">
-    <button class="btn-icon" title="Refresh data" onclick="location.reload()">↺</button>
-    <button class="btn-icon" title="Fullscreen" onclick="toggleFullscreen()">⛶</button>
-    <div class="admin-badge">
-      <div class="admin-avatar">👤</div>
-      Admin ▾
+
+  <div class="header-nav">
+    <div class="maps-dropdown">
+      <button class="nav-link" onclick="toggleMapsMenu()" id="maps-btn">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+          <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
+        </svg>
+        Koleksi Peta
+        <svg viewBox="0 0 10 6" fill="currentColor" style="width:9px;height:9px"><path d="M0 0l5 6 5-6z"/></svg>
+      </button>
+      <div class="maps-menu" id="maps-menu">
+        <div class="maps-menu-title">Peta Digital Lainnya</div>
+        <a href="https://gis-carbonx.github.io/patrol-vis-map/" target="_blank" class="maps-menu-item">
+          <span>🗺️</span> Monitoring Patrol &amp; Camera Trap
+        </a>
+      </div>
     </div>
   </div>
 </header>
 
 <!-- STATS BAR -->
-<div class="stats-bar" id="stats-bar">
+<div class="stats-bar">
   <!-- Total -->
-  <div class="stat-card">
+  <div class="stat-item" style="min-width:160px;">
     <div class="stat-label">Total Lahan Garapan</div>
-    <div class="stat-value" id="stat-total">— ha</div>
-    <div class="stat-sub" id="stat-sub">dari seluruh petak</div>
-    <div class="stat-progress-bar">
-      <div class="stat-progress-fill" id="stat-prog" style="width:5%"></div>
+    <div class="stat-value" id="s-total">— ha</div>
+    <div class="stat-detail">
+      <span class="stat-chip"><span class="dot" style="background:#888"></span><span id="s-petak">—</span> petak</span>
     </div>
-    <div class="stat-pct" id="stat-pct">Memuat…</div>
   </div>
 
   <!-- Agroforestri -->
-  <div class="stat-card">
+  <div class="stat-item" style="min-width:200px;">
     <div class="stat-label">🌱 Agroforestri</div>
-    <div class="stat-value" id="stat-agr">— ha</div>
-    <div class="stat-rows" id="stat-agr-rows">
-      <div class="stat-row">
-        <span><span class="stat-dot" style="background:var(--agr-bpo)"></span>BPO</span>
-        <span class="stat-row-val" id="stat-agr-bpo">— ha</span>
-      </div>
-      <div class="stat-row">
-        <span><span class="stat-dot" style="background:var(--agr-reg)"></span>Reguler</span>
-        <span class="stat-row-val" id="stat-agr-reg">— ha</span>
-      </div>
+    <div class="stat-value" id="s-agr">— ha</div>
+    <div class="stat-detail">
+      <span class="stat-chip"><span class="dot" style="background:var(--agr-bpo)"></span>BPO: <strong id="s-agr-bpo">—</strong></span>
+      <span class="stat-chip"><span class="dot" style="background:var(--agr-reg)"></span>Reguler: <strong id="s-agr-reg">—</strong></span>
     </div>
   </div>
 
   <!-- Tembawang -->
-  <div class="stat-card">
+  <div class="stat-item" style="min-width:200px;">
     <div class="stat-label">🌳 Tembawang</div>
-    <div class="stat-value" id="stat-tbw">— ha</div>
-    <div class="stat-rows">
-      <div class="stat-row">
-        <span><span class="stat-dot" style="background:var(--tbw-reg)"></span>Reguler</span>
-        <span class="stat-row-val" id="stat-tbw-reg">— ha</span>
-      </div>
-      <div class="stat-row">
-        <span><span class="stat-dot" style="background:var(--tbw-mtl)"></span>MTL</span>
-        <span class="stat-row-val" id="stat-tbw-mtl">— ha</span>
-      </div>
+    <div class="stat-value" id="s-tbw">— ha</div>
+    <div class="stat-detail">
+      <span class="stat-chip"><span class="dot" style="background:var(--tbw-reg)"></span>Reguler: <strong id="s-tbw-reg">—</strong></span>
+      <span class="stat-chip"><span class="dot" style="background:var(--tbw-mtl)"></span>MTL: <strong id="s-tbw-mtl">—</strong></span>
     </div>
   </div>
 
-  <!-- Anggota -->
-  <div class="stat-card">
+  <!-- Members -->
+  <div class="stat-item">
     <div class="stat-label">Anggota Terdaftar</div>
-    <div class="member-grid">
+    <div class="member-row">
       <div class="member-item">
-        <div class="member-count male"><span class="member-icon">👨</span> <span id="stat-male">—</span></div>
-        <div class="member-type">Laki-laki</div>
+        <div class="member-num m" id="s-male">—</div>
+        <div style="font-size:10.5px;color:var(--text-3)">Laki-laki</div>
       </div>
+      <div style="width:1px;background:var(--border);align-self:stretch;margin:0 6px"></div>
       <div class="member-item">
-        <div class="member-count female"><span class="member-icon">👩</span> <span id="stat-female">—</span></div>
-        <div class="member-type">Perempuan</div>
+        <div class="member-num f" id="s-female">—</div>
+        <div style="font-size:10.5px;color:var(--text-3)">Perempuan</div>
       </div>
     </div>
-    <div class="member-total">Total <strong id="stat-total-member">—</strong> anggota</div>
+    <div style="font-size:10.5px;color:var(--text-3);margin-top:3px;">Total: <strong id="s-total-member" style="color:var(--text-2)">—</strong> anggota</div>
   </div>
 </div>
 
-<!-- MAIN -->
-<div class="main">
+<!-- BODY -->
+<div class="body-wrap">
+
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <!-- Search -->
-    <div class="search-box">
-      <input class="search-input" type="text" id="search-input" placeholder="Cari nama petani, desa, kode…" oninput="filterKTH()" />
-    </div>
-
-    <!-- Filter chips -->
-    <div class="filter-chips" id="filter-chips">
-      <span class="filter-chip all" onclick="setFilter('all')">Semua</span>
-      <span class="filter-chip agr-bpo" onclick="setFilter('AGR-BPO')">AGR BPO</span>
-      <span class="filter-chip agr-reg" onclick="setFilter('AGR-REG')">AGR Reguler</span>
-      <span class="filter-chip tbw-reg" onclick="setFilter('TBW-REG')">TBW Reguler</span>
-      <span class="filter-chip tbw-mtl" onclick="setFilter('TBW-MTL')">TBW MTL</span>
-    </div>
-
-    <!-- KTH List -->
-    <div class="sidebar-section" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
-      <div class="section-title">
+    <div class="sidebar-head">
+      <div class="sidebar-title">
         KTH Terdaftar
-        <span class="kth-count" id="kth-count">—</span>
+        <span class="badge" id="kth-count">—</span>
       </div>
-      <div class="hint-text">Klik untuk lihat detail dan lokasi</div>
-      <div class="kth-list" id="kth-list">
-        <div style="color:var(--text-muted);font-size:12px;text-align:center;padding:20px;">Memuat data KTH…</div>
-      </div>
+      <input class="search-input" type="text" id="search-input" placeholder="Cari nama KTH, desa, petani…" oninput="filterKTH()" />
     </div>
 
-    <!-- Legend -->
-    <div class="legend-section">
-      <div class="section-title" style="margin-bottom:8px;">Legenda</div>
+    <div class="kth-list" id="kth-list">
+      <div style="color:var(--text-3);font-size:12px;text-align:center;padding:24px;">Memuat…</div>
+    </div>
+
+    <!-- Legend + Layers -->
+    <div class="sidebar-bottom">
+      <div class="sec-title">Legenda</div>
       <div class="legend-grid">
-        <div class="legend-item"><span class="legend-swatch agr-bpo"></span>AGR BPO</div>
-        <div class="legend-item"><span class="legend-swatch agr-reg"></span>AGR Reguler</div>
-        <div class="legend-item"><span class="legend-swatch tbw-reg"></span>TBW Reguler</div>
-        <div class="legend-item"><span class="legend-swatch tbw-mtl"></span>TBW MTL</div>
-        <div class="legend-item"><span class="legend-swatch desa"></span>Batas Desa</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--agr-bpo)"></div>AGR BPO</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--agr-reg)"></div>AGR Reguler</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--tbw-reg)"></div>TBW Reguler</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--tbw-mtl)"></div>TBW MTL</div>
+        <div class="legend-item"><div class="legend-swatch cmi"></div>Batas Area CMI</div>
       </div>
-    </div>
 
-    <!-- Layer controls -->
-    <div class="layer-section">
-      <div class="section-title" style="margin-bottom:8px;">Kontrol Layer</div>
-      <div class="layer-item">
-        <span>Lahan Agroforestri</span>
-        <label class="toggle"><input type="checkbox" id="tog-agr" checked onchange="toggleLayer('agr', this.checked)"><span class="toggle-slider"></span></label>
-      </div>
-      <div class="layer-item">
-        <span>Lahan Tembawang</span>
-        <label class="toggle"><input type="checkbox" id="tog-tbw" checked onchange="toggleLayer('tbw', this.checked)"><span class="toggle-slider"></span></label>
-      </div>
-      <div class="layer-item">
-        <span>Label Petak</span>
-        <label class="toggle"><input type="checkbox" id="tog-lbl" onchange="toggleLayer('lbl', this.checked)"><span class="toggle-slider"></span></label>
+      <div class="sec-title">Kontrol Layer</div>
+      <div class="layer-list">
+        <div class="layer-row">
+          <span>Lahan Agroforestri</span>
+          <label class="toggle">
+            <input type="checkbox" id="tog-agr" checked onchange="toggleLG('agr', this.checked)">
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="layer-row">
+          <span>Lahan Tembawang</span>
+          <label class="toggle">
+            <input type="checkbox" id="tog-tbw" checked onchange="toggleLG('tbw', this.checked)">
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="layer-row">
+          <span>Batas Area CMI</span>
+          <label class="toggle">
+            <input type="checkbox" id="tog-cmi" checked onchange="toggleLG('cmi', this.checked)">
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- MAP -->
-  <div style="position:relative; flex:1;">
-    <div id="map" style="width:100%;height:100%;"></div>
-
+  <div id="map">
     <!-- Basemap pills -->
-    <div class="basemap-pills" id="basemap-pills">
-      <div class="basemap-pill active" onclick="switchBasemap('osm', this)">
-        <div class="basemap-thumb">
-          <img src="https://tile.openstreetmap.org/10/800/512.png" alt="OSM" />
-        </div>
-        <span class="basemap-label">Standar</span>
+    <div class="basemap-wrap">
+      <div class="bm-pill active" id="bm-osm" onclick="switchBasemap('osm', this)">
+        <div class="bm-thumb"><img src="https://tile.openstreetmap.org/10/800/514.png" alt="" /></div>
+        <div class="bm-label">Standar</div>
       </div>
-      <div class="basemap-pill" onclick="switchBasemap('satellite', this)">
-        <div class="basemap-thumb">
-          <img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/8/100/200" alt="Sat" />
-        </div>
-        <span class="basemap-label">Satelit</span>
+      <div class="bm-pill" id="bm-satellite" onclick="switchBasemap('satellite', this)">
+        <div class="bm-thumb"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/8/100/200" alt="" /></div>
+        <div class="bm-label">Satelit</div>
       </div>
-      <div class="basemap-pill" onclick="switchBasemap('topo', this)">
-        <div class="basemap-thumb">
-          <img src="https://tile.opentopomap.org/8/200/100.png" alt="Topo" />
-        </div>
-        <span class="basemap-label">Topografi</span>
+      <div class="bm-pill" id="bm-topo" onclick="switchBasemap('topo', this)">
+        <div class="bm-thumb"><img src="https://tile.opentopomap.org/7/100/60.png" alt="" /></div>
+        <div class="bm-label">Topografi</div>
       </div>
     </div>
-
-    <!-- Minimap -->
-    <div id="minimap"></div>
   </div>
 </div>
 
 <script>
-// =============================================
-// CONFIGURATION — edit these URLs as needed
-// =============================================
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1ZWVhzR7k27Hb3hHorIfBvkglzRN8PH1YDsk4EUhCgx8/export?format=csv&gid=0';
-const GEOJSON_URL   = 'https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/agro.json';
+// ── CONFIG ──────────────────────────────────────────────
+const SHEET_URL  = 'https://docs.google.com/spreadsheets/d/1ZWVhzR7k27Hb3hHorIfBvkglzRN8PH1YDsk4EUhCgx8/export?format=csv&gid=0';
+const GEO_URL    = 'https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/agro.json';
+const CMI_URL    = 'https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/CMI.json';
 
-// =============================================
-// COLOR MAPPING
-// =============================================
-const PROGRAM_COLORS = {
-  'AGR-BPO': { fill: '#4caf6f', stroke: '#2d7a40', cls: 'agr-bpo', label: 'AGR BPO' },
-  'AGR-REG': { fill: '#a8d878', stroke: '#5a9a30', cls: 'agr-reg', label: 'AGR Reguler' },
-  'TBW-REG': { fill: '#e88c3a', stroke: '#b05010', cls: 'tbw-reg', label: 'TBW Reguler' },
-  'TBW-MTL': { fill: '#f5c842', stroke: '#a07010', cls: 'tbw-mtl', label: 'TBW MTL' },
+// ── PROGRAM COLORS ──────────────────────────────────────
+const PC = {
+  'AGR-BPO': { fill:'#3a9e5f', stroke:'#1e6b30', cls:'agr-bpo', label:'AGR BPO',      icon:'🌱' },
+  'AGR-REG': { fill:'#8dc95e', stroke:'#4a7a20', cls:'agr-reg', label:'AGR Reguler',   icon:'🌱' },
+  'TBW-REG': { fill:'#e07c2a', stroke:'#9a4e10', cls:'tbw-reg', label:'TBW Reguler',   icon:'🌳' },
+  'TBW-MTL': { fill:'#e8c030', stroke:'#7a5500', cls:'tbw-mtl', label:'TBW MTL',       icon:'🌳' },
 };
 
-// =============================================
-// STATE
-// =============================================
-let map, minimapMap;
-let sheetData  = [];   // Array of row objects
-let geoData    = null; // GeoJSON FeatureCollection
-let merged     = [];   // Joined data
-let allLayers  = {};   // id_lahan → L.layer
-let layerGroups = { agr: L.layerGroup(), tbw: L.layerGroup(), lbl: L.layerGroup() };
-let kthGroups  = {};   // kth_name → [ row, … ]
-let activeFilter = 'all';
-let activeKTH  = null;
-let baseLayers = {};
-let activeBase = 'osm';
+// ── STATE ────────────────────────────────────────────────
+let map;
+let baseLayers   = {};
+let layerGroups  = { agr: L.layerGroup(), tbw: L.layerGroup(), cmi: L.layerGroup() };
+let allLayers    = {};   // kode_petak → L.geoJSON layer
+let merged       = [];
+let kthGroups    = {};
+let activeKTH    = null;
 
-// =============================================
-// INIT
-// =============================================
-document.addEventListener('DOMContentLoaded', init);
-
-async function init() {
+// ── INIT ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
   initMap();
   try {
-    const [sheet, geo] = await Promise.all([fetchSheet(), fetchGeoJSON()]);
-    sheetData = sheet;
-    geoData   = geo;
-    mergeData();
-    renderStats();
+    const [sheetData, geoData, cmiData] = await Promise.all([
+      fetchCSV(SHEET_URL),
+      fetchJSON(GEO_URL),
+      fetchJSON(CMI_URL).catch(() => null)
+    ]);
+    mergeData(sheetData, geoData);
+    renderStats(sheetData);
     renderKTHList();
     renderMapLayers();
+    if (cmiData) renderCMI(cmiData);
   } catch (e) {
     console.error(e);
     document.getElementById('kth-list').innerHTML =
-      `<div class="error-msg">❌ Gagal memuat data: ${e.message}</div>`;
+      `<div style="color:#c02;font-size:12px;padding:16px;">❌ Gagal memuat: ${e.message}</div>`;
   } finally {
     const ov = document.getElementById('loading-overlay');
     ov.style.opacity = '0';
-    setTimeout(() => ov.style.display = 'none', 400);
+    setTimeout(() => ov.style.display = 'none', 380);
   }
-}
+});
 
-// =============================================
-// MAP SETUP
-// =============================================
+// ── MAP INIT ─────────────────────────────────────────────
 function initMap() {
-  map = L.map('map', { zoomControl: true, attributionControl: false });
-  map.setView([0, 112], 8);
+  map = L.map('map', { zoomControl: true, attributionControl: true });
+  map.setView([0.5, 113], 8);
 
   baseLayers.osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors', maxZoom: 19
+    attribution: '© OpenStreetMap', maxZoom: 19
   });
-  baseLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles © Esri', maxZoom: 19
-  });
+  baseLayers.satellite = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: '© Esri World Imagery', maxZoom: 19 }
+  );
   baseLayers.topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    attribution: 'Map data © OpenTopoMap', maxZoom: 17
+    attribution: '© OpenTopoMap', maxZoom: 17, subdomains: ['a','b','c']
   });
 
   baseLayers.osm.addTo(map);
 
-  Object.values(layerGroups).forEach(lg => lg.addTo(map));
+  layerGroups.agr.addTo(map);
+  layerGroups.tbw.addTo(map);
+  layerGroups.cmi.addTo(map);
 
   L.control.scale({ position: 'bottomright', imperial: false }).addTo(map);
-
-  // Minimap
-  try {
-    minimapMap = L.map('minimap', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false });
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(minimapMap);
-    minimapMap.setView([0, 112], 4);
-    map.on('moveend', () => {
-      minimapMap.setView(map.getCenter(), Math.max(map.getZoom() - 5, 1));
-    });
-  } catch(e) { console.warn('Minimap error:', e); }
 }
 
 function switchBasemap(name, el) {
   Object.values(baseLayers).forEach(l => { if (map.hasLayer(l)) map.removeLayer(l); });
   baseLayers[name].addTo(map);
   baseLayers[name].bringToBack();
-  activeBase = name;
-  document.querySelectorAll('.basemap-pill').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bm-pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
 }
 
-// =============================================
-// DATA FETCHING
-// =============================================
-async function fetchSheet() {
+// ── DATA FETCH ───────────────────────────────────────────
+function fetchCSV(url) {
   return new Promise((resolve, reject) => {
-    Papa.parse(SHEET_CSV_URL, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: res => {
-        if (res.errors.length && res.data.length === 0) reject(new Error('CSV parse error'));
-        else resolve(res.data);
-      },
-      error: err => reject(err)
+    Papa.parse(url, {
+      download: true, header: true, skipEmptyLines: true,
+      complete: r => resolve(r.data),
+      error: e => reject(e)
     });
   });
 }
 
-async function fetchGeoJSON() {
-  const res = await fetch(GEOJSON_URL);
-  if (!res.ok) throw new Error(`GeoJSON fetch failed: ${res.status}`);
-  return res.json();
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}: ${url}`);
+  return r.json();
 }
 
-// =============================================
-// MERGE & DATA PROCESSING
-// =============================================
-function mergeData() {
-  // Build lookup from GeoJSON by id_lahan
-  const geoById = {};
-  if (geoData && geoData.features) {
-    geoData.features.forEach(f => {
-      const id = f.properties && (f.properties.id_lahan || f.properties.ID_LAHAN || f.properties.Id_Lahan);
-      if (id) geoById[id.trim()] = f;
+// ── MERGE ────────────────────────────────────────────────
+function mergeData(sheet, geo) {
+  // Index GeoJSON by id_lahan (case-insensitive key search)
+  const geoIdx = {};
+  if (geo && geo.features) {
+    geo.features.forEach(f => {
+      const p = f.properties || {};
+      const id = p.id_lahan || p.ID_LAHAN || p.Id_Lahan || p.id_Lahan || p.ID;
+      if (id) geoIdx[String(id).trim()] = f;
     });
   }
-
-  // Column names from screenshot:
-  // A=No, B=Kompartemen, C=Sub Komp, D=Nama KTH, E=Kode KTH,
-  // F=Kode Intervensi, G=Luas (Ha), H=Nama Petani, I=L, J=P,
-  // K=Desa, L=Dusun, M=Kode Petak, N=Realisasi Tanam (Tanggal),
-  // O=AGR, (P,Q,R,S,T,U) columns for AGR BPO TBW MTL Bibit Gratis Catatan ...
-  // Then INTERVENTION, MoU, BPO M column
 
   merged = [];
   kthGroups = {};
 
-  sheetData.forEach(row => {
-    // Get Kode Petak (column M header)
-    const kode = getCol(row, ['Kode Petak', 'kode_petak', 'KODE PETAK', 'M']);
+  sheet.forEach(row => {
+    const vals = Object.values(row);
+    const keys = Object.keys(row);
+
+    // Column M = Kode Petak (index 12, 0-based)
+    const kode = colByKeyOrIndex(row, vals, keys, ['Kode Petak','kode petak','KODE PETAK'], 12);
     if (!kode || !kode.trim()) return;
 
-    const geo = geoById[kode.trim()];
-    // Only include if geo exists
-    if (!geo) return;
+    const geo_f = geoIdx[kode.trim()];
+    if (!geo_f) return; // skip if no geometry
 
-    // Determine program class
-    const intervensi = getCol(row, ['Kode Intervensi', 'kode_intervensi', 'KODE INTERVENSI', 'F']) || '';
-    const bpoVal = parseFloat(getCol(row, ['BPO', 'AGR BPO']) || 0);
-    const mtlVal = parseFloat(getCol(row, ['MTL', 'TBW MTL']) || 0);
+    const intervensi = (colByKeyOrIndex(row, vals, keys, ['Kode Intervensi','kode intervensi'], 5) || '').toUpperCase().trim();
+    // BPO column — column R (index 17) per header screenshot
+    const bpoV = parseNum(colByKeyOrIndex(row, vals, keys, ['BPO','AGR BPO'], 17));
+    // MTL column — column T (index 19)
+    const mtlV = parseNum(colByKeyOrIndex(row, vals, keys, ['MTL','TBW MTL'], 19));
 
-    let programKey = '';
-    if (intervensi.toUpperCase() === 'AGR') {
-      programKey = bpoVal > 0 ? 'AGR-BPO' : 'AGR-REG';
-    } else if (intervensi.toUpperCase() === 'TBW') {
-      programKey = mtlVal > 0 ? 'TBW-MTL' : 'TBW-REG';
-    } else {
-      programKey = 'AGR-REG'; // fallback
-    }
+    let program = 'AGR-REG';
+    if (intervensi === 'AGR') program = bpoV > 0 ? 'AGR-BPO' : 'AGR-REG';
+    else if (intervensi === 'TBW') program = mtlV > 0 ? 'TBW-MTL' : 'TBW-REG';
 
-    const kthName = getCol(row, ['Nama KTH', 'nama_kth', 'D']) || 'Unknown';
+    const kthName = colByKeyOrIndex(row, vals, keys, ['Nama KTH','nama kth','NAMA KTH'], 3) || 'Tidak Diketahui';
 
     const r = {
-      kode_petak: kode.trim(),
-      nama_petani: getCol(row, ['Nama Petani', 'nama_petani', 'H']) || '—',
-      nama_kth: kthName,
-      kode_kth: getCol(row, ['Kode KTH', 'E']) || '—',
-      kode_intervensi: intervensi,
-      luas: parseFloat(getCol(row, ['Luas (Ha)', 'Luas', 'luas', 'G']) || 0),
-      desa: getCol(row, ['Desa', 'desa', 'K']) || '—',
-      dusun: getCol(row, ['Dusun', 'dusun', 'L']) || '—',
-      kompartemen: getCol(row, ['Kompartemen', 'B']) || '—',
-      sub_komp: getCol(row, ['Sub Komp', 'C']) || '—',
-      realisasi_tanam: getCol(row, ['Realisasi Tanam (Tanggal)', 'Realisasi Tanam', 'N']) || '—',
-      agr_val: parseFloat(getCol(row, ['AGR', 'O']) || 0),
-      bpo_val: bpoVal,
-      tbw_val: parseFloat(getCol(row, ['TBW', 'P', 'R']) || 0),
-      mtl_val: mtlVal,
-      gender_l: getCol(row, ['L', 'I', 'LP']) || '',
-      gender_p: getCol(row, ['P', 'J']) || '',
-      catatan: getCol(row, ['Catatan', 'catatan']) || '',
-      program: programKey,
-      geo: geo
+      kode_petak:    kode.trim(),
+      nama_petani:   colByKeyOrIndex(row, vals, keys, ['Nama Petani','nama petani'], 7) || '—',
+      nama_kth:      kthName,
+      kode_kth:      colByKeyOrIndex(row, vals, keys, ['Kode KTH','kode kth'], 4) || '—',
+      intervensi,
+      luas:          parseNum(colByKeyOrIndex(row, vals, keys, ['Luas (Ha)','Luas','luas'], 6)),
+      desa:          colByKeyOrIndex(row, vals, keys, ['Desa','desa'], 10) || '—',
+      dusun:         colByKeyOrIndex(row, vals, keys, ['Dusun','dusun'], 11) || '—',
+      kompartemen:   colByKeyOrIndex(row, vals, keys, ['Kompartemen'], 1) || '—',
+      sub_komp:      colByKeyOrIndex(row, vals, keys, ['Sub Komp','Sub Komponen'], 2) || '—',
+      realisasi:     colByKeyOrIndex(row, vals, keys, ['Realisasi Tanam (Tanggal)','Realisasi Tanam'], 13) || '—',
+      agr_v:         parseNum(colByKeyOrIndex(row, vals, keys, ['AGR'], 14)),
+      bpo_v:         bpoV,
+      tbw_v:         parseNum(colByKeyOrIndex(row, vals, keys, ['TBW'], 18)),
+      mtl_v:         mtlV,
+      catatan:       colByKeyOrIndex(row, vals, keys, ['Catatan','catatan'], 21) || '',
+      program,
+      geo:           geo_f
     };
 
     merged.push(r);
-
     if (!kthGroups[kthName]) kthGroups[kthName] = [];
     kthGroups[kthName].push(r);
   });
 
-  console.log(`Merged ${merged.length} records from ${Object.keys(kthGroups).length} KTH`);
+  console.log(`Merged: ${merged.length} rows, ${Object.keys(kthGroups).length} KTH`);
 }
 
-function getCol(row, candidates) {
+function colByKeyOrIndex(row, vals, keys, candidates, fallbackIdx) {
   for (const c of candidates) {
-    if (row[c] !== undefined && row[c] !== null) return row[c];
+    const v = row[c];
+    if (v !== undefined && v !== null && v !== '') return v;
+    // case-insensitive
+    const k = keys.find(k => k.trim().toLowerCase() === c.toLowerCase());
+    if (k && row[k] !== undefined && row[k] !== '') return row[k];
   }
-  // Try case-insensitive
-  const keys = Object.keys(row);
-  for (const c of candidates) {
-    const found = keys.find(k => k.toLowerCase().trim() === c.toLowerCase().trim());
-    if (found !== undefined && row[found] !== undefined) return row[found];
-  }
-  return undefined;
+  // fallback by position
+  if (fallbackIdx !== undefined && vals[fallbackIdx] !== undefined) return vals[fallbackIdx];
+  return '';
 }
 
-// =============================================
-// STATISTICS
-// =============================================
-function renderStats() {
-  let totalHa = 0, agrBpo = 0, agrReg = 0, tbwReg = 0, tbwMtl = 0;
-  let maleCount = 0, femaleCount = 0;
+function parseNum(v) {
+  if (v === undefined || v === null || v === '') return 0;
+  return parseFloat(String(v).replace(',', '.')) || 0;
+}
 
-  // Count from all sheetData for members (not just geo-matched)
-  sheetData.forEach(row => {
-    const l = getCol(row, ['L', 'I']) || '';
-    const p = getCol(row, ['P', 'J']) || '';
-    if (l === '1' || l.toString().toLowerCase() === 'l' || l === 'L') maleCount++;
-    if (p === '1' || p.toString().toLowerCase() === 'p' || p === 'P') femaleCount++;
-  });
-
+// ── STATS ────────────────────────────────────────────────
+function renderStats(sheet) {
+  let total = 0, agrBpo = 0, agrReg = 0, tbwReg = 0, tbwMtl = 0;
   merged.forEach(r => {
-    totalHa += r.luas;
+    total  += r.luas;
     if (r.program === 'AGR-BPO') agrBpo += r.luas;
     else if (r.program === 'AGR-REG') agrReg += r.luas;
     else if (r.program === 'TBW-REG') tbwReg += r.luas;
     else if (r.program === 'TBW-MTL') tbwMtl += r.luas;
   });
 
-  const fmtHa = v => v.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ha';
-
-  document.getElementById('stat-total').textContent = fmtHa(totalHa);
-  document.getElementById('stat-sub').textContent = `dari ${merged.length} petak`;
-
-  document.getElementById('stat-agr').textContent = fmtHa(agrBpo + agrReg);
-  document.getElementById('stat-agr-bpo').textContent = fmtHa(agrBpo);
-  document.getElementById('stat-agr-reg').textContent = fmtHa(agrReg);
-
-  document.getElementById('stat-tbw').textContent = fmtHa(tbwReg + tbwMtl);
-  document.getElementById('stat-tbw-reg').textContent = fmtHa(tbwReg);
-  document.getElementById('stat-tbw-mtl').textContent = fmtHa(tbwMtl);
-
-  // Member count — use row count with L=1 / P=1
-  // Alternative: just count unique petani per gender marker
-  // If columns I and J are literal '1', count them
-  // Fallback: count all merged rows
-  let ml = 0, fp = 0;
-  sheetData.forEach(row => {
-    const keys = Object.keys(row);
-    // columns I and J by position index
+  // Count members from all sheet rows by col I (index 8) and J (index 9)
+  let male = 0, female = 0;
+  sheet.forEach(row => {
     const vals = Object.values(row);
-    const iVal = vals[8] !== undefined ? vals[8].toString().trim() : '';
-    const jVal = vals[9] !== undefined ? vals[9].toString().trim() : '';
-    if (iVal === '1') ml++;
-    if (jVal === '1') fp++;
+    if (String(vals[8] || '').trim() === '1') male++;
+    if (String(vals[9] || '').trim() === '1') female++;
   });
-  if (ml === 0 && fp === 0) { ml = maleCount; fp = femaleCount; }
 
-  document.getElementById('stat-male').textContent = ml.toLocaleString('id-ID');
-  document.getElementById('stat-female').textContent = fp.toLocaleString('id-ID');
-  document.getElementById('stat-total-member').textContent = (ml + fp).toLocaleString('id-ID');
+  const ha = v => v.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ha';
+  const haShort = v => v.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ha';
+
+  setText('s-total',       ha(total));
+  setText('s-petak',       merged.length);
+  setText('s-agr',         ha(agrBpo + agrReg));
+  setText('s-agr-bpo',     haShort(agrBpo));
+  setText('s-agr-reg',     haShort(agrReg));
+  setText('s-tbw',         ha(tbwReg + tbwMtl));
+  setText('s-tbw-reg',     haShort(tbwReg));
+  setText('s-tbw-mtl',     haShort(tbwMtl));
+  setText('s-male',        male.toLocaleString('id-ID'));
+  setText('s-female',      female.toLocaleString('id-ID'));
+  setText('s-total-member',(male + female).toLocaleString('id-ID'));
 }
 
-// =============================================
-// KTH SIDEBAR LIST
-// =============================================
-function renderKTHList(filter) {
-  const list = document.getElementById('kth-list');
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ── KTH LIST ─────────────────────────────────────────────
+function renderKTHList() {
+  const list   = document.getElementById('kth-list');
   const search = (document.getElementById('search-input').value || '').toLowerCase();
 
-  let displayed = 0;
-  const html = Object.entries(kthGroups)
-    .filter(([name, rows]) => {
-      if (search && !name.toLowerCase().includes(search)) return false;
-      if (activeFilter !== 'all') {
-        if (!rows.some(r => r.program === activeFilter)) return false;
-      }
-      return true;
-    })
-    .map(([name, rows]) => {
-      displayed++;
-      const totalArea = rows.reduce((s, r) => s + r.luas, 0);
-      const agrArea = rows.filter(r => r.program.startsWith('AGR')).reduce((s, r) => s + r.luas, 0);
-      const tbwArea = rows.filter(r => r.program.startsWith('TBW')).reduce((s, r) => s + r.luas, 0);
-      const desa = rows[0]?.desa || '—';
-      const pct_agr = totalArea > 0 ? Math.round(agrArea / totalArea * 100) : 0;
-      const pct_tbw = totalArea > 0 ? Math.round(tbwArea / totalArea * 100) : 0;
+  const entries = Object.entries(kthGroups).filter(([name, rows]) => {
+    if (!search) return true;
+    return name.toLowerCase().includes(search) ||
+      rows.some(r => r.desa.toLowerCase().includes(search) || r.nama_petani.toLowerCase().includes(search));
+  });
 
-      const isActive = activeKTH === name;
+  document.getElementById('kth-count').textContent = entries.length;
 
-      return `
-        <div class="kth-item ${isActive ? 'active' : ''}" onclick="focusKTH('${escHtml(name)}')">
-          <div class="kth-header">
-            <div class="kth-info">
-              <div class="kth-name">${escHtml(name)}</div>
-              <div class="kth-location">📍 ${escHtml(desa)} · ${rows.length} petak</div>
-            </div>
-            <div class="kth-area">${totalArea.toFixed(2)} ha</div>
-          </div>
-          <div class="kth-breakdown">
-            ${agrArea > 0 ? `<span class="kth-tag agr">🌱 ${agrArea.toFixed(1)} ha (${pct_agr}%)</span>` : ''}
-            ${tbwArea > 0 ? `<span class="kth-tag tbw">🌳 ${tbwArea.toFixed(1)} ha (${pct_tbw}%)</span>` : ''}
-          </div>
-        </div>`;
-    }).join('');
+  if (entries.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-3);font-size:12px;text-align:center;padding:24px;">Tidak ada hasil</div>';
+    return;
+  }
 
-  list.innerHTML = html || '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:20px;">Tidak ada data</div>';
-  document.getElementById('kth-count').textContent = displayed;
+  list.innerHTML = entries.map(([name, rows]) => {
+    const total  = rows.reduce((s, r) => s + r.luas, 0);
+    const agrA   = rows.filter(r => r.program.startsWith('AGR')).reduce((s, r) => s + r.luas, 0);
+    const tbwA   = rows.filter(r => r.program.startsWith('TBW')).reduce((s, r) => s + r.luas, 0);
+    const desa   = rows[0]?.desa || '—';
+    const pAGR   = total > 0 ? Math.round(agrA / total * 100) : 0;
+    const pTBW   = total > 0 ? Math.round(tbwA / total * 100) : 0;
+    const isAct  = activeKTH === name;
+
+    return `
+      <div class="kth-card ${isAct ? 'active' : ''}" onclick="focusKTH(${JSON.stringify(name)})">
+        <div class="kth-row1">
+          <div class="kth-name">${esc(name)}</div>
+          <div class="kth-area">${total.toFixed(2)} ha</div>
+        </div>
+        <div class="kth-loc">📍 ${esc(desa)} · ${rows.length} petak</div>
+        <div class="kth-tags">
+          ${agrA > 0 ? `<span class="kth-tag agr">🌱 ${agrA.toFixed(1)} ha (${pAGR}%)</span>` : ''}
+          ${tbwA > 0 ? `<span class="kth-tag tbw">🌳 ${tbwA.toFixed(1)} ha (${pTBW}%)</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function filterKTH() { renderKTHList(); }
 
-function setFilter(f) {
-  activeFilter = f;
-  document.querySelectorAll('.filter-chip').forEach(c => {
-    c.classList.toggle('inactive', !c.classList.contains(f === 'all' ? 'all' : f.toLowerCase().replace('-', '-')));
-  });
-  // re-highlight active chip
-  document.querySelectorAll('.filter-chip').forEach(c => {
-    c.classList.remove('inactive');
-  });
-  if (f !== 'all') {
-    document.querySelectorAll('.filter-chip').forEach(c => {
-      if (!c.classList.contains('all') && !c.classList.contains(f.toLowerCase().replace('-', '-'))) {
-        c.classList.add('inactive');
-      }
-    });
-  }
-
-  // Filter map layers
-  Object.entries(allLayers).forEach(([id, layer]) => {
-    const row = merged.find(r => r.kode_petak === id);
-    if (!row) return;
-    const inFilter = f === 'all' || row.program === f;
-    const lgroup = row.program.startsWith('AGR') ? layerGroups.agr : layerGroups.tbw;
-    if (inFilter) { if (!lgroup.hasLayer(layer)) lgroup.addLayer(layer); }
-    else { lgroup.removeLayer(layer); }
-  });
-
-  renderKTHList();
-}
-
 function focusKTH(name) {
   activeKTH = name;
   const rows = kthGroups[name];
-  if (!rows || rows.length === 0) return;
+  if (!rows) return;
 
-  // Collect bounds
-  const bounds = [];
-  rows.forEach(r => {
-    const layer = allLayers[r.kode_petak];
-    if (layer) {
-      try { bounds.push(layer.getBounds()); } catch(e) {}
-    }
-  });
+  const bounds = rows
+    .map(r => allLayers[r.kode_petak])
+    .filter(Boolean)
+    .map(l => { try { return l.getBounds(); } catch(e) { return null; } })
+    .filter(Boolean);
 
   if (bounds.length > 0) {
-    let combined = bounds[0];
-    bounds.forEach(b => { combined = combined.extend(b); });
-    map.fitBounds(combined, { padding: [40, 40] });
+    let b = bounds[0];
+    bounds.forEach(x => { b = b.extend(x); });
+    map.fitBounds(b, { padding: [40, 40] });
   }
 
   renderKTHList();
 }
 
-// =============================================
-// MAP LAYERS
-// =============================================
+// ── MAP LAYERS ───────────────────────────────────────────
 function renderMapLayers() {
   layerGroups.agr.clearLayers();
   layerGroups.tbw.clearLayers();
-  layerGroups.lbl.clearLayers();
   allLayers = {};
 
   merged.forEach(row => {
-    const c = PROGRAM_COLORS[row.program] || PROGRAM_COLORS['AGR-REG'];
-    const layer = L.geoJSON(row.geo, {
+    const c = PC[row.program] || PC['AGR-REG'];
+
+    const lyr = L.geoJSON(row.geo, {
       style: {
         color: c.stroke,
-        weight: 1.5,
+        weight: 1.2,
         fillColor: c.fill,
-        fillOpacity: 0.72,
+        fillOpacity: 0.68,
         opacity: 1
       }
     });
 
-    layer.on('mouseover', function(e) {
-      e.target.setStyle({ fillOpacity: 0.9, weight: 2.5 });
-      L.tooltip({ sticky: true, className: 'leaflet-tooltip' })
-        .setContent(`<strong>${row.kode_petak}</strong> — ${row.nama_petani}<br/>${row.luas.toFixed(2)} ha · ${c.label}`)
+    lyr.on('mouseover', e => {
+      e.target.setStyle({ fillOpacity: 0.88, weight: 2 });
+      L.tooltip({ sticky: true })
+        .setContent(`<strong>${row.kode_petak}</strong><br/>${row.nama_petani} · ${row.luas.toFixed(2)} ha`)
         .addTo(map)
         .setLatLng(e.latlng)
         .openOn(map);
     });
 
-    layer.on('mouseout', function(e) {
-      e.target.setStyle({ fillOpacity: 0.72, weight: 1.5 });
+    lyr.on('mouseout', e => {
+      e.target.setStyle({ fillOpacity: 0.68, weight: 1.2 });
       map.closeTooltip();
     });
 
-    layer.on('click', function() {
+    lyr.on('click', () => {
       map.closePopup();
-      const popup = L.popup({ maxWidth: 340, className: '' })
-        .setLatLng(layer.getBounds().getCenter())
-        .setContent(buildPopupHTML(row))
+      L.popup({ maxWidth: 320 })
+        .setLatLng(lyr.getBounds().getCenter())
+        .setContent(buildPopup(row))
         .openOn(map);
     });
 
-    allLayers[row.kode_petak] = layer;
+    allLayers[row.kode_petak] = lyr;
 
-    if (row.program.startsWith('AGR')) layerGroups.agr.addLayer(layer);
-    else layerGroups.tbw.addLayer(layer);
+    if (row.program.startsWith('AGR')) layerGroups.agr.addLayer(lyr);
+    else layerGroups.tbw.addLayer(lyr);
   });
 
-  // Fit map to data
-  if (merged.length > 0) {
-    const allBounds = Object.values(allLayers)
-      .map(l => { try { return l.getBounds(); } catch(e) { return null; } })
-      .filter(Boolean);
+  // Fit map
+  const allB = Object.values(allLayers)
+    .map(l => { try { return l.getBounds(); } catch(e) { return null; } })
+    .filter(Boolean);
 
-    if (allBounds.length > 0) {
-      let combined = allBounds[0];
-      allBounds.forEach(b => { combined = combined.extend(b); });
-      map.fitBounds(combined, { padding: [30, 30] });
-      if (minimapMap) minimapMap.setView(combined.getCenter(), 4);
-    }
+  if (allB.length > 0) {
+    let b = allB[0];
+    allB.forEach(x => { b = b.extend(x); });
+    map.fitBounds(b, { padding: [30, 30] });
   }
 }
 
-function buildPopupHTML(row) {
-  const c = PROGRAM_COLORS[row.program] || PROGRAM_COLORS['AGR-REG'];
+function renderCMI(data) {
+  layerGroups.cmi.clearLayers();
+  const lyr = L.geoJSON(data, {
+    style: {
+      color: '#1a5c8a',
+      weight: 2,
+      fillOpacity: 0,
+      dashArray: '6 4',
+      opacity: 0.85
+    }
+  }).bindTooltip('Batas Area CMI', { permanent: false, sticky: true });
+
+  layerGroups.cmi.addLayer(lyr);
+}
+
+function toggleLG(type, on) {
+  const lg = layerGroups[type];
+  if (!lg) return;
+  if (on) { if (!map.hasLayer(lg)) lg.addTo(map); }
+  else map.removeLayer(lg);
+}
+
+// ── POPUP ────────────────────────────────────────────────
+function buildPopup(row) {
+  const c = PC[row.program] || PC['AGR-REG'];
 
   const rows = [
-    ['ID Lahan', `<span style="font-family:monospace;font-size:11px">${row.kode_petak}</span>`],
-    ['Nama Petani', row.nama_petani],
-    ['KTH', row.nama_kth],
-    ['Kode KTH', row.kode_kth],
+    ['Nama Petani',   row.nama_petani],
+    ['KTH',          row.nama_kth],
     ['Desa / Dusun', `${row.desa}${row.dusun !== '—' ? ' / ' + row.dusun : ''}`],
-    ['Kompartemen', `${row.kompartemen}${row.sub_komp !== '—' ? ' / Sub ' + row.sub_komp : ''}`],
-    ['Luas Lahan', `<span class="popup-area-badge">${row.luas.toFixed(2)} ha</span>`],
-    ['Intervensi', row.kode_intervensi],
-    ['Realisasi Tanam', row.realisasi_tanam],
+    ['Kompartemen',  `${row.kompartemen}${row.sub_komp !== '—' ? '.'+row.sub_komp : ''}`],
+    ['Luas Lahan',   `<span class="pu-area">${row.luas.toFixed(2)} ha</span>`],
+    ['Realisasi Tanam', row.realisasi],
   ];
 
-  if (row.bpo_val > 0) rows.push(['BPO', `${row.bpo_val.toFixed(2)} ha`]);
-  if (row.agr_val > 0) rows.push(['Luas AGR', `${row.agr_val.toFixed(2)} ha`]);
-  if (row.tbw_val > 0) rows.push(['Luas TBW', `${row.tbw_val.toFixed(2)} ha`]);
-  if (row.mtl_val > 0) rows.push(['MTL', `${row.mtl_val.toFixed(2)} ha`]);
-  if (row.catatan) rows.push(['Catatan', row.catatan]);
-
-  const tableRows = rows.map(([k, v]) =>
-    `<div class="popup-row"><span class="popup-key">${k}</span><span class="popup-val">${v}</span></div>`
-  ).join('');
+  if (row.bpo_v > 0) rows.push(['BPO',     `${row.bpo_v.toFixed(2)} ha`]);
+  if (row.agr_v > 0) rows.push(['Luas AGR', `${row.agr_v.toFixed(2)} ha`]);
+  if (row.tbw_v > 0) rows.push(['Luas TBW', `${row.tbw_v.toFixed(2)} ha`]);
+  if (row.mtl_v > 0) rows.push(['MTL',      `${row.mtl_v.toFixed(2)} ha`]);
+  if (row.catatan)   rows.push(['Catatan',   esc(row.catatan)]);
 
   return `
-    <div class="popup-inner">
-      <div class="popup-header">
-        <span class="popup-id">${row.kode_petak}</span>
-        <span class="popup-program-badge ${c.cls}">
-          ${row.program.startsWith('AGR') ? '🌱' : '🌳'} ${c.label}
-        </span>
+    <div class="pu">
+      <div class="pu-head">
+        <span class="pu-id">${row.kode_petak}</span>
+        <span class="pu-badge ${c.cls}">${c.icon} ${c.label}</span>
       </div>
-      <div class="popup-body">
-        ${tableRows}
+      <div class="pu-body">
+        ${rows.map(([k,v]) => `
+          <div class="pu-row">
+            <span class="pu-k">${k}</span>
+            <span class="pu-v">${v}</span>
+          </div>`).join('')}
       </div>
     </div>`;
 }
 
-function toggleLayer(type, visible) {
-  const lg = layerGroups[type];
-  if (!lg) return;
-  if (visible) { if (!map.hasLayer(lg)) lg.addTo(map); }
-  else { map.removeLayer(lg); }
+// ── UTILS ────────────────────────────────────────────────
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function toggleMapsMenu() {
+  const m = document.getElementById('maps-menu');
+  m.classList.toggle('open');
 }
 
-function toggleFullscreen() {
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-}
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  const btn  = document.getElementById('maps-btn');
+  const menu = document.getElementById('maps-menu');
+  if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
 </script>
 </body>
 </html>
