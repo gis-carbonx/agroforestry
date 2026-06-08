@@ -34,12 +34,20 @@
     .hdr-logo-fallback svg{width:20px;height:20px;fill:#fff}
     .hdr-title{font-size:15px;font-weight:700;line-height:1.2}
     .hdr-sub{font-size:12px;color:var(--text-2)}
-    .hdr-right{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)}
+    .hdr-right{display:flex;align-items:center;gap:8px}
 
-    .basemap-switcher{display:flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px}
-    .bm-btn{padding:4px 10px;border-radius:6px;border:none;background:transparent;font-size:11px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
-    .bm-btn.active{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm)}
-    .bm-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,.6)}
+    /* HAMBURGER MENU */
+    .menu-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;color:var(--text-2);transition:all .15s;position:relative}
+    .menu-btn:hover{background:var(--primary-bg);border-color:var(--primary-lt);color:var(--primary-md)}
+    .menu-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+    .menu-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);min-width:220px;overflow:hidden;z-index:500;display:none}
+    .menu-dropdown.open{display:block}
+    .menu-hd{padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);border-bottom:1px solid var(--border-lt)}
+    .menu-item{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;transition:background .12s;cursor:pointer;border:none;background:none;width:100%;font-family:inherit}
+    .menu-item:hover{background:var(--primary-bg);color:var(--primary-md)}
+    .menu-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;color:var(--text-2)}
+    .menu-item:hover svg{color:var(--primary-lt)}
+    .menu-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
     /* STATS BAR */
     .stats-bar{height:var(--stats-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 16px;overflow-x:auto}
@@ -66,6 +74,7 @@
     .kth-card{padding:11px 12px;margin-bottom:6px;border:1px solid var(--border);border-radius:9px;background:var(--surface);transition:border-color .12s,box-shadow .12s}
     .kth-card:hover{border-color:var(--primary-lt);box-shadow:var(--shadow-sm)}
     .kth-card.active{border-color:var(--primary-md);box-shadow:var(--shadow-sm)}
+    .kth-card.hidden-kth{opacity:.45}
     .kth-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px}
     .kth-info{flex:1;min-width:0}
     .kth-nm{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}
@@ -74,6 +83,8 @@
     .kth-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;transition:all .15s;color:var(--text-2)}
     .kth-btn:hover{background:var(--primary-bg);border-color:var(--primary-lt);color:var(--primary-md)}
     .kth-btn.eye:hover{background:#eff6ff;border-color:#93c5fd;color:#2563eb}
+    .kth-btn.vis-on{background:var(--primary-bg);border-color:var(--primary-lt);color:var(--primary-md)}
+    .kth-btn.vis-off{background:#fef2f2;border-color:#fca5a5;color:#dc2626}
     .kth-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
     .kth-pills{display:flex;gap:6px}
     .pill{flex:1;padding:6px 8px;border-radius:7px;font-size:11px}
@@ -104,6 +115,18 @@
     #map{width:100%;height:100%}
     .leaflet-control-scale-line{font-family:'DM Sans',sans-serif;font-size:11px}
 
+    /* BASEMAP SWITCHER — bottom-left of map */
+    .basemap-panel{position:absolute;bottom:28px;left:16px;z-index:600;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);padding:8px;display:flex;flex-direction:column;gap:6px}
+    .bm-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);padding:0 2px 2px}
+    .bm-tiles{display:flex;gap:6px}
+    .bm-thumb{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+    .bm-img{width:52px;height:40px;border-radius:7px;border:2px solid var(--border);overflow:hidden;transition:border-color .15s;background:#e2e8f0}
+    .bm-img img{width:100%;height:100%;object-fit:cover;display:block}
+    .bm-thumb.active .bm-img{border-color:var(--primary-md);box-shadow:0 0 0 2px var(--primary-bg)}
+    .bm-name{font-size:10px;font-weight:600;color:var(--text-2);transition:color .15s}
+    .bm-thumb.active .bm-name{color:var(--primary-md)}
+    .bm-thumb:hover .bm-img{border-color:var(--primary-lt)}
+
     .loading-overlay{position:absolute;inset:0;z-index:998;background:rgba(255,255,255,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(2px)}
     .spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -120,23 +143,8 @@
     .pop-lbl{font-size:11px;color:var(--text-2);flex-shrink:0}
     .pop-val{font-size:12px;font-weight:600;color:var(--text);text-align:right;word-break:break-word}
 
-    .lahan-preview{position:absolute;bottom:24px;right:16px;z-index:700;width:300px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);overflow:hidden;border:1px solid var(--border);animation:slideUp .2s ease}
-    @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-    .lp-hd{padding:10px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-    .lp-hd-left{display:flex;flex-direction:column;gap:1px}
-    .lp-id{font-size:11px;font-family:monospace;color:var(--text-2)}
-    .lp-name{font-size:13px;font-weight:700;color:var(--text)}
-    .lp-close{width:24px;height:24px;border-radius:6px;background:var(--bg);border:none;cursor:pointer;display:grid;place-items:center;color:var(--text-2);font-size:16px;transition:background .12s}
-    .lp-close:hover{background:var(--border)}
-    .lp-map{width:100%;height:160px;border-bottom:1px solid var(--border)}
-    .lp-body{padding:10px 13px;display:flex;flex-direction:column;gap:4px}
-    .lp-row{display:flex;justify-content:space-between;font-size:11px}
-    .lp-lbl{color:var(--text-2)}
-    .lp-val{font-weight:600;color:var(--text)}
-    .lp-tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
-
     .modal-overlay{position:fixed;inset:0;z-index:900;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
-    .kth-modal{background:#fff;border-radius:14px;width:min(820px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
+    .kth-modal{background:#fff;border-radius:14px;width:min(860px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
     .kth-modal-hd{padding:16px 20px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
     .kth-modal-title{font-size:15px;font-weight:700}
     .kth-modal-sub{font-size:12px;opacity:.8;margin-top:1px}
@@ -146,8 +154,16 @@
     .kth-stat-box{flex:1;min-width:110px;padding:10px 13px;background:#fff;border:1px solid var(--border);border-radius:9px}
     .kth-stat-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px}
     .kth-stat-val{font-size:17px;font-weight:800}
-    .kth-modal-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
-    .kth-modal-toolbar span{font-size:12px;color:var(--text-2);font-weight:600}
+    .kth-modal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+    .modal-search-wrap{display:flex;align-items:center;gap:8px;flex:1;min-width:180px}
+    .modal-search{flex:1;padding:6px 10px 6px 32px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-family:inherit;color:var(--text);background:#f8fafc;outline:none;transition:border-color .15s}
+    .modal-search:focus{border-color:var(--primary-lt);background:#fff}
+    .modal-search-icon{position:relative;flex:1;display:flex;align-items:center}
+    .modal-search-icon svg{position:absolute;left:9px;width:13px;height:13px;stroke:var(--text-3);pointer-events:none;stroke-width:2;fill:none}
+    .modal-search-icon input{width:100%;padding:6px 10px 6px 30px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-family:inherit;color:var(--text);background:#f8fafc;outline:none;transition:border-color .15s}
+    .modal-search-icon input:focus{border-color:var(--primary-lt);background:#fff}
+    .modal-toolbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .modal-count{font-size:12px;color:var(--text-2);font-weight:600;white-space:nowrap}
     .btn-dl{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:600;color:var(--primary-md);cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s,border-color .15s;font-family:inherit}
     .btn-dl:hover{background:var(--primary-bg);border-color:var(--primary-lt)}
     .kth-modal-body{overflow-y:auto;padding:0}
@@ -157,14 +173,13 @@
     .kth-tbl td{padding:9px 12px;border-bottom:1px solid var(--border-lt);color:var(--text);vertical-align:middle}
     .kth-tbl tr:last-child td{border-bottom:none}
     .kth-tbl tr:hover td{background:#f8fafc}
+    .kth-tbl tr.hidden-row{display:none}
     .prog-tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
     .prog-tag.ar{background:#dcfce7;color:#166534}
     .prog-tag.ab{background:#dbeafe;color:#1e40af}
     .prog-tag.tr{background:#ffedd5;color:#9a3412}
     .prog-tag.tm{background:#f3e8ff;color:#6b21a8}
-    .row-eye-btn{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;color:var(--text-2);transition:all .15s;flex-shrink:0}
-    .row-eye-btn:hover{background:#eff6ff;border-color:#93c5fd;color:#2563eb}
-    .row-eye-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .no-results{text-align:center;padding:28px 16px;color:var(--text-3);font-size:13px}
 
     ::-webkit-scrollbar{width:4px;height:4px}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
@@ -191,13 +206,23 @@
     </div>
   </div>
   <div class="hdr-right">
-    <div class="basemap-switcher">
-      <button class="bm-btn active" onclick="switchBasemap('light')" id="bm-light">Light</button>
-      <button class="bm-btn" onclick="switchBasemap('topo')" id="bm-topo">Topografi</button>
-      <button class="bm-btn" onclick="switchBasemap('satellite')" id="bm-satellite">Satelit</button>
+    <div style="position:relative">
+      <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" title="Menu Navigasi">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="menu-dropdown" id="menuDropdown">
+        <div class="menu-hd">Peta Digital</div>
+        <a class="menu-item" href="https://gis-carbonx.github.io/patrol-vis-map/" target="_blank">
+          <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Patrol Monitoring
+        </a>
+        <div class="menu-hd" style="margin-top:2px">Aktif Sekarang</div>
+        <div class="menu-item" style="cursor:default;opacity:.7">
+          <div class="menu-item-dot" style="background:var(--primary-lt)"></div>
+          Lahan Garapan Masyarakat
+        </div>
+      </div>
     </div>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    Admin
   </div>
 </header>
 
@@ -252,7 +277,9 @@
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         Zoom &nbsp;
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-        Tabel &amp; Unduh
+        Tabel &nbsp;
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        On/Off
       </div>
     </div>
     <div class="kth-scroll" id="kthList">
@@ -281,20 +308,30 @@
   <div class="map-wrap">
     <div id="map"></div>
 
-    <div class="lahan-preview" id="lahanPreview" style="display:none">
-      <div class="lp-hd">
-        <div class="lp-hd-left">
-          <div class="lp-id" id="lpId">—</div>
-          <div class="lp-name" id="lpName">—</div>
+    <!-- BASEMAP SWITCHER — bottom left of map -->
+    <div class="basemap-panel" id="basemapPanel">
+      <div class="bm-label">Basemap</div>
+      <div class="bm-tiles">
+        <div class="bm-thumb active" id="bm-light" onclick="switchBasemap('light')">
+          <div class="bm-img"><img src="https://a.basemaps.cartocdn.com/light_all/9/407/252.png" alt="Light"></div>
+          <div class="bm-name">Light</div>
         </div>
-        <button class="lp-close" onclick="closePreview()">✕</button>
-      </div>
-      <div id="lpMap" class="lp-map"></div>
-      <div class="lp-body">
-        <div class="lp-row"><span class="lp-lbl">KTH</span><span class="lp-val" id="lpKth">—</span></div>
-        <div class="lp-row"><span class="lp-lbl">Program</span><span class="lp-val" id="lpProg">—</span></div>
-        <div class="lp-row"><span class="lp-lbl">Luas</span><span class="lp-val" id="lpLuas">—</span></div>
-        <div class="lp-row"><span class="lp-lbl">Desa</span><span class="lp-val" id="lpDesa">—</span></div>
+        <div class="bm-thumb" id="bm-topo" onclick="switchBasemap('topo')">
+          <div class="bm-img"><img src="https://a.tile.opentopomap.org/9/407/252.png" alt="Topo"></div>
+          <div class="bm-name">Topo</div>
+        </div>
+        <div class="bm-thumb" id="bm-satellite" onclick="switchBasemap('satellite')">
+          <div class="bm-img"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/9/252/407" alt="Satelit"></div>
+          <div class="bm-name">Satelit</div>
+        </div>
+        <div class="bm-thumb" id="bm-streets" onclick="switchBasemap('streets')">
+          <div class="bm-img"><img src="https://a.tile.openstreetmap.org/9/407/252.png" alt="Streets"></div>
+          <div class="bm-name">Streets</div>
+        </div>
+        <div class="bm-thumb" id="bm-dark" onclick="switchBasemap('dark')">
+          <div class="bm-img"><img src="https://a.basemaps.cartocdn.com/dark_all/9/407/252.png" alt="Dark"></div>
+          <div class="bm-name">Dark</div>
+        </div>
       </div>
     </div>
 
@@ -305,6 +342,7 @@
   </div>
 </div>
 
+<!-- KTH TABLE MODAL -->
 <div class="modal-overlay" id="kthModal" style="display:none" onclick="closeModal(event)">
   <div class="kth-modal" onclick="event.stopPropagation()">
     <div class="kth-modal-hd">
@@ -316,20 +354,27 @@
     </div>
     <div class="kth-modal-stats" id="modalStats"></div>
     <div class="kth-modal-toolbar">
-      <span id="modalRowCount">0 lahan</span>
-      <button class="btn-dl" onclick="downloadCSV()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Unduh CSV
-      </button>
+      <div class="modal-search-icon" style="flex:1;min-width:180px;max-width:320px">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="modalSearchInput" placeholder="Cari nama petani..." oninput="filterModalTable(this.value)" />
+      </div>
+      <div class="modal-toolbar-right">
+        <span class="modal-count" id="modalRowCount">0 lahan</span>
+        <button class="btn-dl" onclick="downloadCSV()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Unduh CSV
+        </button>
+      </div>
     </div>
     <div class="kth-modal-body">
       <table class="kth-tbl">
         <thead><tr>
-          <th>No</th><th>Lokasi</th><th>ID Lahan</th><th>Nama Petani</th><th>Desa</th>
+          <th>No</th><th>ID Lahan</th><th>Nama Petani</th><th>Desa</th>
           <th>Program</th><th>Luas (ha)</th><th>Tgl Realisasi</th>
         </tr></thead>
         <tbody id="modalTbody"></tbody>
       </table>
+      <div class="no-results" id="noResults" style="display:none">Tidak ada hasil ditemukan</div>
     </div>
   </div>
 </div>
@@ -352,15 +397,11 @@ const PROG = {
 };
 
 const BASEMAPS = {
-  light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19
-  }),
-  topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    attribution:'&copy; OpenTopoMap &copy; OSM', maxZoom:17
-  }),
-  satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution:'&copy; Esri &copy; satellite providers', maxZoom:19
-  }),
+  light:     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',   { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19 }),
+  topo:      L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',                 { attribution:'&copy; OpenTopoMap', maxZoom:17 }),
+  satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution:'&copy; Esri', maxZoom:19 }),
+  streets:   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',               { attribution:'&copy; OSM contributors', maxZoom:19 }),
+  dark:      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',    { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19 }),
 };
 let currentBasemap = 'light';
 
@@ -376,21 +417,34 @@ function switchBasemap(key) {
   BASEMAPS[key].addTo(map);
   BASEMAPS[key].bringToBack();
   currentBasemap = key;
-  document.querySelectorAll('.bm-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.bm-thumb').forEach(b => b.classList.remove('active'));
   document.getElementById('bm-' + key).classList.add('active');
 }
+
+// hamburger menu
+function toggleMenu() {
+  document.getElementById('menuDropdown').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('menuBtn').contains(e.target) &&
+      !document.getElementById('menuDropdown').contains(e.target)) {
+    document.getElementById('menuDropdown').classList.remove('open');
+  }
+});
 
 const lgAgro = L.layerGroup().addTo(map);
 const lgTemb = L.layerGroup().addTo(map);
 const lgCMI  = L.layerGroup().addTo(map);
 const layerState = { agro: true, temb: true, cmi: true };
 
+// per-KTH visibility state
+const kthVisState = {};
+
 let sheetMap   = {};
 let matched    = new Set();
 let kthMap     = {};
 let kthBounds  = {};
 let currentKTH = null;
-let previewMap = null;
 let featureMap = {};
 
 (async function boot() {
@@ -463,11 +517,7 @@ function renderAgro(gj) {
     const st = PROG[row.prog];
 
     const layer = L.geoJSON(feat, {
-      style: () => ({
-        color: st.stroke, weight: 2,
-        fillColor: st.fill, fillOpacity: 0.75,
-        opacity: 1,
-      })
+      style: () => ({ color: st.stroke, weight: 2, fillColor: st.fill, fillOpacity: 0.75, opacity: 1 })
     });
 
     layer.bindPopup(() => buildPopup(feat, row), { maxWidth: 270, minWidth: 220, autoPan: true });
@@ -485,6 +535,7 @@ function renderAgro(gj) {
         agro: 0, temb: 0, aReg: 0, aBPO: 0, tReg: 0, tMTL: 0,
         layers: [], rows: [], petaniSet: new Set(),
       };
+      kthVisState[row.kth] = true; // default visible
     }
     const k = kthMap[row.kth];
     k.agro += row.aReg + row.aBPO;
@@ -515,60 +566,6 @@ function buildPopup(feat, row) {
     `<div class="pop-row"><span class="pop-lbl">${l}</span><span class="pop-val">${esc(v)}</span></div>`
   ).join('');
   return `<div class="pop-hd" style="background:${st.hd}"><div class="pop-hd-dot"></div>${esc(st.label)}</div><div class="pop-bd">${rows}</div>`;
-}
-
-function showPreview(id) {
-  const entry = featureMap[id];
-  if (!entry) return;
-  const { feature, row } = entry;
-  const st = PROG[row.prog];
-
-  document.getElementById('kthModal').style.display = 'none';
-
-  setText('lpId',   row.id);
-  setText('lpName', row.petani || '—');
-  setText('lpKth',  row.kth);
-  setText('lpLuas', fmt(row.luas) + ' ha');
-  setText('lpDesa', row.desa);
-  document.getElementById('lpProg').innerHTML =
-    `<span class="lp-tag prog-tag ${st.tagCls}">${esc(st.label)}</span>`;
-
-  const panel = document.getElementById('lahanPreview');
-  panel.style.display = 'block';
-
-  const mapEl = document.getElementById('lpMap');
-  if (previewMap) { previewMap.remove(); previewMap = null; }
-  previewMap = L.map(mapEl, { zoomControl: false, dragging: false, scrollWheelZoom: false, attributionControl: false });
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd', maxZoom: 19
-  }).addTo(previewMap);
-
-  const miniLayer = L.geoJSON(feature, {
-    style: () => ({ color: st.stroke, weight: 2, fillColor: st.fill, fillOpacity: 0.8 })
-  }).addTo(previewMap);
-
-  try {
-    previewMap.fitBounds(miniLayer.getBounds().pad(0.3));
-  } catch(e) {}
-
-  try {
-    const mainLayer = L.geoJSON(feature);
-    map.fitBounds(mainLayer.getBounds().pad(0.4));
-  } catch(e) {}
-
-  const mainEntry = featureMap[id];
-  if (mainEntry && mainEntry.layer) {
-    mainEntry.layer.setStyle({ weight: 4, fillOpacity: 0.95 });
-    setTimeout(() => {
-      if (mainEntry.layer) mainEntry.layer.setStyle({ weight: 2, fillOpacity: 0.75 });
-    }, 2000);
-  }
-}
-
-function closePreview() {
-  document.getElementById('lahanPreview').style.display = 'none';
-  if (previewMap) { previewMap.remove(); previewMap = null; }
 }
 
 function calcStats() {
@@ -603,11 +600,15 @@ function renderKTHList() {
   const el = document.getElementById('kthList');
   if (!list.length) { el.innerHTML = '<div class="empty-state">Tidak ada data KTH</div>'; return; }
 
-  const eyeIcon = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-  const tblIcon = `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`;
+  const eyeIcon  = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const tblIcon  = `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`;
+  const visOnIcon  = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const visOffIcon = `<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
 
-  el.innerHTML = list.map(k => `
-    <div class="kth-card" data-kth="${esc(k.name)}">
+  el.innerHTML = list.map(k => {
+    const isOn = kthVisState[k.name] !== false;
+    return `
+    <div class="kth-card${isOn ? '' : ' hidden-kth'}" data-kth="${esc(k.name)}">
       <div class="kth-card-top">
         <div class="kth-info">
           <div class="kth-nm">${esc(k.name)}</div>
@@ -616,13 +617,50 @@ function renderKTHList() {
         <div class="kth-actions">
           <button class="kth-btn eye" title="Zoom ke area KTH" onclick="zoomKTH('${esc(k.name)}')">${eyeIcon}</button>
           <button class="kth-btn" title="Lihat tabel lahan" onclick="openKTH('${esc(k.name)}')">${tblIcon}</button>
+          <button class="kth-btn ${isOn ? 'vis-on' : 'vis-off'}" id="visbtn-${esc(k.name)}" title="${isOn ? 'Sembunyikan' : 'Tampilkan'} lahan KTH ini" onclick="toggleKTHVis('${esc(k.name)}')">${isOn ? visOnIcon : visOffIcon}</button>
         </div>
       </div>
       <div class="kth-pills">
         <div class="pill a"><div class="pl">Agroforestri</div><div class="pv">${fmt(k.agro)} ha</div></div>
         <div class="pill t"><div class="pl">Tembawang</div><div class="pv">${fmt(k.temb)} ha</div></div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function toggleKTHVis(name) {
+  const k = kthMap[name];
+  if (!k) return;
+  const wasOn = kthVisState[name] !== false;
+  kthVisState[name] = !wasOn;
+  const isOn = kthVisState[name];
+
+  const visOnIcon  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const visOffIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+  k.layers.forEach(l => {
+    if (isOn) {
+      const row = k.rows.find(r => featureMap[r.id]?.layer === l);
+      if (row) {
+        const st = PROG[row.prog];
+        const target = st.group === 'agro' ? lgAgro : lgTemb;
+        target.addLayer(l);
+      }
+    } else {
+      lgAgro.removeLayer(l);
+      lgTemb.removeLayer(l);
+    }
+  });
+
+  const card = document.querySelector(`.kth-card[data-kth="${name}"]`);
+  if (card) card.classList.toggle('hidden-kth', !isOn);
+
+  const btn = document.getElementById('visbtn-' + name);
+  if (btn) {
+    btn.className = `kth-btn ${isOn ? 'vis-on' : 'vis-off'}`;
+    btn.title = isOn ? 'Sembunyikan lahan KTH ini' : 'Tampilkan lahan KTH ini';
+    btn.innerHTML = isOn ? visOnIcon : visOffIcon;
+  }
 }
 
 function zoomKTH(name) {
@@ -632,7 +670,7 @@ function zoomKTH(name) {
   if (kthBounds[name]) map.fitBounds(kthBounds[name].pad(0.22));
 
   const k = kthMap[name];
-  if (k) {
+  if (k && kthVisState[name] !== false) {
     k.layers.forEach(l => { l.setStyle({ weight: 4, fillOpacity: 0.95 }); });
     setTimeout(() => { k.layers.forEach(l => l.setStyle({ weight: 2, fillOpacity: 0.75 })); }, 1500);
   }
@@ -658,17 +696,13 @@ function openKTH(name) {
     <div class="kth-stat-box"><div class="kth-stat-lbl">Jumlah Petani</div><div class="kth-stat-val" style="color:#3b82f6">${k.petaniSet.size}</div></div>
     <div class="kth-stat-box"><div class="kth-stat-lbl">Jumlah Petak</div><div class="kth-stat-val">${k.rows.length}</div></div>`;
 
+  document.getElementById('modalSearchInput').value = '';
   setText('modalRowCount', k.rows.length + ' lahan');
-
-  const eyeIcon = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 
   document.getElementById('modalTbody').innerHTML = k.rows.map((r, i) => {
     const st = PROG[r.prog];
-    return `<tr>
+    return `<tr data-petani="${esc(r.petani.toLowerCase())}">
       <td style="color:var(--text-3);font-size:11px">${i + 1}</td>
-      <td>
-        <button class="row-eye-btn" title="Lihat lokasi lahan" onclick="previewFromModal('${esc(r.id)}')">${eyeIcon}</button>
-      </td>
       <td style="font-family:monospace;font-size:11px">${esc(r.id)}</td>
       <td>${esc(r.petani)}</td>
       <td>${esc(r.desa)}</td>
@@ -678,14 +712,22 @@ function openKTH(name) {
     </tr>`;
   }).join('');
 
+  document.getElementById('noResults').style.display = 'none';
   document.getElementById('kthModal').style.display = 'flex';
 }
 
-function previewFromModal(id) {
-  
-  document.getElementById('kthModal').style.display = 'none';
-  currentKTH = null;
-  showPreview(id);
+function filterModalTable(q) {
+  const term = q.toLowerCase().trim();
+  const rows = document.querySelectorAll('#modalTbody tr');
+  let visible = 0;
+  rows.forEach(tr => {
+    const name = tr.getAttribute('data-petani') || '';
+    const show = !term || name.includes(term);
+    tr.classList.toggle('hidden-row', !show);
+    if (show) visible++;
+  });
+  setText('modalRowCount', visible + ' lahan');
+  document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
 }
 
 function closeModal(e) {
