@@ -400,7 +400,7 @@ const BASEMAPS = {
   osm:             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',                                              { attribution:'&copy; OSM contributors', maxZoom:19 }),
   carto_dark:      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',                                  { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19 }),
 };
-let currentBasemap = 'esri_imagery';
+let currentBasemap = 'esri_topo';
 
 const map = L.map('map', { zoomControl: false });
 L.control.zoom({ position: 'topright' }).addTo(map);
