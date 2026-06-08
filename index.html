@@ -26,7 +26,6 @@
     }
     html,body{height:100%;font-family:'DM Sans',system-ui,sans-serif;font-size:14px;color:var(--text);background:var(--bg);overflow:hidden}
 
-    /* HEADER */
     .hdr{height:var(--hdr-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:relative;z-index:200}
     .hdr-left{display:flex;align-items:center;gap:10px}
     .hdr-logo{height:36px;width:auto;object-fit:contain}
@@ -36,7 +35,6 @@
     .hdr-sub{font-size:12px;color:var(--text-2)}
     .hdr-right{display:flex;align-items:center;gap:8px}
 
-    /* HAMBURGER MENU */
     .menu-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;color:var(--text-2);transition:all .15s;position:relative}
     .menu-btn:hover{background:var(--primary-bg);border-color:var(--primary-lt);color:var(--primary-md)}
     .menu-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
@@ -49,25 +47,8 @@
     .menu-item:hover svg{color:var(--primary-lt)}
     .menu-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
-    /* STATS BAR */
-    .stats-bar{
-      height:var(--stats-h);
-      background:var(--surface);
-      border-bottom:1px solid var(--border);
-      display:flex;
-      align-items:stretch;
-      overflow-x:auto;
-    }
-    .sc{
-      flex:1;
-      min-width:190px;
-      padding:14px 20px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      border-right:1px solid var(--border-lt);
-      transition:background .15s;
-    }
+    .stats-bar{height:var(--stats-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;overflow-x:auto}
+    .sc{flex:1;min-width:190px;padding:14px 20px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--border-lt);transition:background .15s}
     .sc:last-child{border-right:none}
     .sc:hover{background:var(--primary-bg)}
     .sc-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:6px}
@@ -76,10 +57,8 @@
     .sc-meta-item{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;color:var(--text-2);white-space:nowrap}
     .dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
-    /* LAYOUT */
     .app-body{height:calc(100vh - var(--hdr-h) - var(--stats-h));display:flex;overflow:hidden}
 
-    /* SIDEBAR */
     .sb{width:var(--sb-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
     .sb-hd{padding:13px 15px;border-bottom:1px solid var(--border-lt)}
     .sb-hd-row{display:flex;align-items:center;justify-content:space-between}
@@ -127,24 +106,10 @@
     .leg-sq{width:12px;height:12px;border-radius:2px;flex-shrink:0;border:2px solid rgba(0,0,0,.2)}
     .leg-dash{width:18px;border-top:2px dashed #94a3b8;flex-shrink:0}
 
-    /* MAP — kunci anti-glitch: map-wrap pakai explicit height bukan flex */
-    .map-wrap{
-      flex:1;
-      position:relative;
-      overflow:hidden;
-      /* Pastikan container punya dimensi eksplisit sebelum Leaflet init */
-      min-width:0;
-      min-height:0;
-    }
-    #map{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-    }
+    .map-wrap{flex:1;position:relative;overflow:hidden;min-width:0;min-height:0}
+    #map{position:absolute;inset:0;width:100%;height:100%}
     .leaflet-control-scale-line{font-family:'DM Sans',sans-serif;font-size:11px}
 
-    /* BASEMAP PANEL */
     .basemap-panel{position:absolute;bottom:10px;left:16px;z-index:900;display:flex;flex-direction:column;gap:6px}
     .basemap-label-row{font-size:8px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.7px;padding-left:2px}
     .basemap-pills{display:flex;gap:5px;flex-wrap:wrap}
@@ -171,7 +136,6 @@
     .pop-lbl{font-size:11px;color:var(--text-2);flex-shrink:0}
     .pop-val{font-size:12px;font-weight:600;color:var(--text);text-align:right;word-break:break-word}
 
-    /* MODAL */
     .modal-overlay{position:fixed;inset:0;z-index:900;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
     .kth-modal{background:#fff;border-radius:14px;width:min(880px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
     .kth-modal-hd{padding:16px 20px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -336,7 +300,6 @@
   <div class="map-wrap" id="mapWrap">
     <div id="map"></div>
 
-    <!-- BASEMAP PANEL -->
     <div class="basemap-panel" id="basemapPanel">
       <div class="basemap-label-row">Basemap</div>
       <div class="basemap-pills">
@@ -438,48 +401,21 @@ const BASEMAPS = {
 };
 let currentBasemap = 'carto_light';
 
-// ── ANTI-GLITCH #1 ─────────────────────────────────────────────────────────
-// Inisialisasi map TANPA tile layer dulu, biarkan container
-// selesai di-layout oleh browser terlebih dahulu
-const map = L.map('map', {
-  zoomControl: false,
-  // Nonaktifkan fade animasi tile saat load awal — mengurangi glitch visual
-  fadeAnimation: true,
-  zoomAnimation: true,
-  markerZoomAnimation: true,
-});
-L.control.zoom({ position: 'topright' }).addTo(map);
-L.control.scale({ position: 'bottomright', metric: true, imperial: false }).addTo(map);
+const map = L.map('map', { zoomControl:false, fadeAnimation:true, zoomAnimation:true, markerZoomAnimation:true });
+L.control.zoom({ position:'topright' }).addTo(map);
+L.control.scale({ position:'bottomright', metric:true, imperial:false }).addTo(map);
 map.setView([1.0, 111.5], 9);
 
-// ── ANTI-GLITCH #2 ─────────────────────────────────────────────────────────
-// Pasang ResizeObserver pada container map — setiap kali ukuran berubah
-// (load, font render, layout shift), Leaflet langsung recalculate grid tile
-const mapContainer = document.getElementById('map');
-const resizeObserver = new ResizeObserver(() => {
-  map.invalidateSize({ animate: false, pan: false });
-});
-resizeObserver.observe(mapContainer);
+const resizeObserver = new ResizeObserver(() => { map.invalidateSize({ animate:false, pan:false }); });
+resizeObserver.observe(document.getElementById('map'));
 
-// ── ANTI-GLITCH #3 ─────────────────────────────────────────────────────────
-// Tambahkan tile layer SETELAH map container ada di DOM dan
-// browser sudah punya 1 frame untuk menghitung layout
 requestAnimationFrame(() => {
   BASEMAPS.carto_light.addTo(map);
-  requestAnimationFrame(() => {
-    map.invalidateSize({ animate: false, pan: false });
-  });
+  requestAnimationFrame(() => { map.invalidateSize({ animate:false, pan:false }); });
 });
 
-// ── ANTI-GLITCH #4 ─────────────────────────────────────────────────────────
-// Saat window selesai load total (font, CSS, gambar) — fire invalidateSize
-// untuk menangkap perubahan layout yang terjadi setelah DOMContentLoaded
 window.addEventListener('load', () => {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      map.invalidateSize({ animate: false, pan: false });
-    });
-  });
+  requestAnimationFrame(() => { requestAnimationFrame(() => { map.invalidateSize({ animate:false, pan:false }); }); });
 });
 
 function switchBasemap(key) {
@@ -492,22 +428,17 @@ function switchBasemap(key) {
   document.getElementById('bm_' + key).classList.add('active');
 }
 
-// hamburger menu
-function toggleMenu() {
-  document.getElementById('menuDropdown').classList.toggle('open');
-}
+function toggleMenu() { document.getElementById('menuDropdown').classList.toggle('open'); }
 document.addEventListener('click', e => {
   const btn = document.getElementById('menuBtn');
   const dd  = document.getElementById('menuDropdown');
-  if (btn && dd && !btn.contains(e.target) && !dd.contains(e.target)) {
-    dd.classList.remove('open');
-  }
+  if (btn && dd && !btn.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('open');
 });
 
 const lgAgro = L.layerGroup().addTo(map);
 const lgTemb = L.layerGroup().addTo(map);
 const lgCMI  = L.layerGroup().addTo(map);
-const layerState  = { agro: true, temb: true, cmi: true };
+const layerState  = { agro:true, temb:true, cmi:true };
 const kthVisState = {};
 
 let sheetMap   = {};
@@ -542,31 +473,70 @@ let featureMap = {};
 async function getText(url) { const r = await fetch(url); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }
 async function getJSON(url)  { const r = await fetch(url); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FUNGSI UTAMA: Tentukan program dari kolom K/L/M/N (angka) atau fallback ke
+// kolom E (Tipe) jika semua angka 0/kosong.
+// Kolom baru (setelah penambahan Tipe di kolom E):
+//   A=No, B=Grid, C=KTH, D=Luas, E=Tipe, F=Petani,
+//   G=Jenis Kelamin, H=Desa, I=ID_Petak, J=Tgl_Realisasi,
+//   K=Agro_Reg, L=Agro_BPO, M=Temb_Reg, N=Temb_MTL
+// ─────────────────────────────────────────────────────────────────────────────
+function resolveProgram(aReg, aBPO, tReg, tMTL, tipeStr) {
+  // Prioritas 1: ada nilai angka di kolom program
+  if (aReg > 0) return 'Agro_Reg';
+  if (aBPO > 0) return 'Agro_BPO';
+  if (tReg > 0) return 'Temb_Reg';
+  if (tMTL > 0) return 'Temb_MTL';
+
+  // Prioritas 2: fallback dari kolom Tipe (E)
+  const t = tipeStr.toLowerCase().trim();
+  if (t.includes('tembawang')) return 'Temb_Reg';
+  if (t.includes('agroforestri') || t.includes('agroforestry')) return 'Agro_Reg';
+
+  // Tidak bisa ditentukan
+  return null;
+}
+
 function parseSheet(csvText) {
-  const { data } = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
+  const { data } = Papa.parse(csvText, { header:true, skipEmptyLines:true, transformHeader: h => h.trim() });
+
   data.forEach(raw => {
-    const id = str(raw['ID_Petak'] || raw['id_petak'] || raw['H'] || '');
+    // ── ID Petak ──────────────────────────────────────────────────────────
+    // Header name bisa beragam; coba beberapa kemungkinan + fallback kolom I
+    const id = str(
+      raw['ID_Petak'] || raw['id_petak'] || raw['ID Petak'] ||
+      raw['I'] || ''
+    );
     if (!id) return;
-    const aReg = num(raw['Agro_Reg'] || raw['J'] || 0);
-    const aBPO = num(raw['Agro_BPO'] || raw['K'] || 0);
-    const tReg = num(raw['Temb_Reg'] || raw['L'] || 0);
-    const tMTL = num(raw['Temb_MTL'] || raw['M'] || 0);
-    let prog = null;
-    if      (aReg > 0) prog = 'Agro_Reg';
-    else if (aBPO > 0) prog = 'Agro_BPO';
-    else if (tReg > 0) prog = 'Temb_Reg';
-    else if (tMTL > 0) prog = 'Temb_MTL';
-    sheetMap[id] = {
-      id,
-      kth   : str(raw['KTH']    || raw['C'] || ''),
-      luas  : num(raw['Luas']   || raw['D'] || 0),
-      petani: str(raw['Petani'] || raw['E'] || ''),
-      jk    : str(raw['Jenis Kelamin'] || raw['Jenis_Kelamin'] || raw['F'] || ''),
-      desa  : str(raw['Desa']   || raw['G'] || ''),
-      tgl   : str(raw['Tgl_Realisasi'] || raw['I'] || ''),
-      aReg, aBPO, tReg, tMTL, prog,
-    };
+
+    // ── Kolom data (header-based lebih andal dari index) ──────────────────
+    const kth    = str(raw['KTH']            || raw['C'] || '');
+    const luas   = num(raw['Luas']           || raw['D'] || 0);
+    const tipe   = str(raw['Tipe']           || raw['E'] || '');   // ← KOLOM BARU
+    const petani = str(raw['Petani']         || raw['F'] || '');
+    const jk     = str(raw['Jenis Kelamin']  || raw['Jenis_Kelamin'] || raw['G'] || '');
+    const desa   = str(raw['Desa']           || raw['H'] || '');
+    const tgl    = str(raw['Tgl_Realisasi']  || raw['Tgl Realisasi'] || raw['J'] || '');
+
+    // ── Nilai program (kolom K–N) ─────────────────────────────────────────
+    const aReg = num(raw['Agro_Reg'] || raw['Agro Reg'] || raw['K'] || 0);
+    const aBPO = num(raw['Agro_BPO'] || raw['Agro BPO'] || raw['L'] || 0);
+    const tReg = num(raw['Temb_Reg'] || raw['Temb Reg'] || raw['M'] || 0);
+    const tMTL = num(raw['Temb_MTL'] || raw['Temb MTL'] || raw['N'] || 0);
+
+    // ── Tentukan program ──────────────────────────────────────────────────
+    const prog = resolveProgram(aReg, aBPO, tReg, tMTL, tipe);
+    if (!prog) return; // lewati baris yang tidak bisa ditentukan programnya
+
+    // ── Pastikan luas terisi: jika 0 tapi ada nilai di kolom program, pakai itu
+    const luasFinal = luas > 0 ? luas
+      : (aReg || aBPO || tReg || tMTL || 0);
+
+    // ── Simpan ke sheetMap ────────────────────────────────────────────────
+    sheetMap[id] = { id, kth, luas: luasFinal, tipe, petani, jk, desa, tgl, aReg, aBPO, tReg, tMTL, prog };
   });
+
+  console.log(`[sheet] ${Object.keys(sheetMap).length} baris valid dimuat`);
 }
 
 function renderCMI(gj) {
@@ -577,33 +547,43 @@ function renderCMI(gj) {
 
 function renderAgro(gj) {
   const features = gj.type === 'FeatureCollection' ? gj.features : [gj];
+  let rendered = 0;
+
   features.forEach(feat => {
     const props   = feat.properties || {};
-    const idLahan = str(props.id_lahan || props.ID_Petak || props.id_petak || props.ID_LAHAN || props.Id_Lahan || '');
-    if (!idLahan || !sheetMap[idLahan]) return;
+    // Coba berbagai nama field id lahan di GeoJSON
+    const idLahan = str(
+      props.id_lahan || props.ID_Petak || props.id_petak ||
+      props.ID_LAHAN || props.Id_Lahan || props.IDLAHAN || ''
+    );
+    if (!idLahan) return;
+
     const row = sheetMap[idLahan];
-    if (!row.prog || !PROG[row.prog]) return;
+    if (!row) return;               // tidak ada di sheet
+    if (!PROG[row.prog]) return;    // program tidak dikenali
+
     matched.add(idLahan);
+    rendered++;
     const st = PROG[row.prog];
 
     const layer = L.geoJSON(feat, {
-      style: () => ({ color: st.stroke, weight: 2, fillColor: st.fill, fillOpacity: 0.75, opacity: 1 })
+      style: () => ({ color:st.stroke, weight:2, fillColor:st.fill, fillOpacity:0.75, opacity:1 })
     });
 
-    layer.bindPopup(() => buildPopup(feat, row), { maxWidth: 270, minWidth: 220, autoPan: true });
-    layer.on('mouseover', e => { e.target.setStyle({ fillOpacity: 0.92, weight: 3 }); e.target.bringToFront(); });
-    layer.on('mouseout',  e => { e.target.setStyle({ fillOpacity: 0.75, weight: 2 }); });
+    layer.bindPopup(() => buildPopup(feat, row), { maxWidth:270, minWidth:220, autoPan:true });
+    layer.on('mouseover', e => { e.target.setStyle({ fillOpacity:0.92, weight:3 }); e.target.bringToFront(); });
+    layer.on('mouseout',  e => { e.target.setStyle({ fillOpacity:0.75, weight:2 }); });
 
     const target = st.group === 'agro' ? lgAgro : lgTemb;
     target.addLayer(layer);
 
-    featureMap[idLahan] = { feature: feat, row, layer };
+    featureMap[idLahan] = { feature:feat, row, layer };
 
     if (!kthMap[row.kth]) {
       kthMap[row.kth] = {
-        name: row.kth, desa: row.desa,
-        agro: 0, temb: 0, aReg: 0, aBPO: 0, tReg: 0, tMTL: 0,
-        layers: [], rows: [], petaniSet: new Set(),
+        name:row.kth, desa:row.desa,
+        agro:0, temb:0, aReg:0, aBPO:0, tReg:0, tMTL:0,
+        layers:[], rows:[], petaniSet: new Set(),
       };
       kthVisState[row.kth] = true;
     }
@@ -619,6 +599,8 @@ function renderAgro(gj) {
   Object.entries(kthMap).forEach(([name, k]) => {
     if (k.layers.length) kthBounds[name] = L.featureGroup(k.layers).getBounds();
   });
+
+  console.log(`[geo] ${rendered} polygon dirender dari ${features.length} fitur GeoJSON`);
 }
 
 function buildPopup(feat, row) {
@@ -628,6 +610,7 @@ function buildPopup(feat, row) {
     ['Nama Petani',   row.petani],
     ['KTH',           row.kth],
     ['Desa',          row.desa],
+    ['Tipe',          row.tipe || '—'],
     ['Luas',          fmt(row.luas) + ' ha'],
     ['Program',       st.label],
     ['Tgl Realisasi', row.tgl || '—'],
@@ -647,17 +630,33 @@ function zoomToLahan(id) {
     const bounds = L.geoJSON(entry.feature).getBounds();
     map.fitBounds(bounds.pad(0.5));
   } catch(e) {}
-  entry.layer.setStyle({ weight: 4, fillOpacity: 0.95 });
-  setTimeout(() => { entry.layer.setStyle({ weight: 2, fillOpacity: 0.75 }); }, 2000);
+  entry.layer.setStyle({ weight:4, fillOpacity:0.95 });
+  setTimeout(() => { entry.layer.setStyle({ weight:2, fillOpacity:0.75 }); }, 2000);
   setTimeout(() => { try { entry.layer.openPopup(); } catch(e) {} }, 400);
 }
 
 function calcStats() {
   let totalHa = 0, aReg = 0, aBPO = 0, tReg = 0, tMTL = 0;
   const uniq = new Set(), laki = new Set(), pmp = new Set();
+
   Object.values(sheetMap).forEach(r => {
     if (!matched.has(r.id)) return;
-    totalHa += r.luas; aReg += r.aReg; aBPO += r.aBPO; tReg += r.tReg; tMTL += r.tMTL;
+
+    // Hitung luas: ambil dari kolom luas, atau sum dari kolom program
+    const luasEfektif = r.luas > 0 ? r.luas : (r.aReg + r.aBPO + r.tReg + r.tMTL);
+    totalHa += luasEfektif;
+
+    // Hitung per-program — jika kolom K-N kosong/0, pakai luas dari tipe
+    if (r.aReg > 0 || r.aBPO > 0 || r.tReg > 0 || r.tMTL > 0) {
+      aReg += r.aReg; aBPO += r.aBPO; tReg += r.tReg; tMTL += r.tMTL;
+    } else {
+      // fallback: akumulasi ke program yang ditentukan dari kolom Tipe
+      if      (r.prog === 'Agro_Reg') aReg += luasEfektif;
+      else if (r.prog === 'Agro_BPO') aBPO += luasEfektif;
+      else if (r.prog === 'Temb_Reg') tReg += luasEfektif;
+      else if (r.prog === 'Temb_MTL') tMTL += luasEfektif;
+    }
+
     if (r.petani) {
       const pk = r.petani.toLowerCase();
       uniq.add(pk);
@@ -665,17 +664,18 @@ function calcStats() {
       else if (r.jk.toLowerCase().includes('perempuan')) pmp.add(pk);
     }
   });
+
   setText('sTotalHa',   fmt(totalHa) + ' ha');
   setText('sTotalMeta', matched.size + ' petak lahan');
   setText('sAgroHa',    fmt(aReg + aBPO) + ' ha');
-  setText('sAgroReg',   'Agro Reguler: ' + fmt(aReg) + ' ha');
+  setText('sAgroReg',   'Agro Reguler: '         + fmt(aReg) + ' ha');
   setText('sAgroBPO',   'Bantuan Pupuk Organik: ' + fmt(aBPO) + ' ha');
   setText('sTembHa',    fmt(tReg + tMTL) + ' ha');
-  setText('sTembReg',   'Temb. Reguler: ' + fmt(tReg) + ' ha');
-  setText('sTembMTL',   'Temb. MTL: ' + fmt(tMTL) + ' ha');
+  setText('sTembReg',   'Temb. Reguler: '         + fmt(tReg) + ' ha');
+  setText('sTembMTL',   'Temb. MTL: '             + fmt(tMTL) + ' ha');
   setText('sAnggota',   uniq.size);
-  setText('sLaki',      'Laki-laki: ' + laki.size);
-  setText('sPmp',       'Perempuan: ' + pmp.size);
+  setText('sLaki',      'Laki-laki: '  + laki.size);
+  setText('sPmp',       'Perempuan: '  + pmp.size);
 }
 
 function renderKTHList() {
@@ -752,11 +752,10 @@ function zoomKTH(name) {
   const card = document.querySelector(`.kth-card[data-kth="${name}"]`);
   if (card) { card.classList.add('active'); card.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
   if (kthBounds[name]) map.fitBounds(kthBounds[name].pad(0.22));
-
   const k = kthMap[name];
   if (k && kthVisState[name] !== false) {
-    k.layers.forEach(l => { l.setStyle({ weight: 4, fillOpacity: 0.95 }); });
-    setTimeout(() => { k.layers.forEach(l => l.setStyle({ weight: 2, fillOpacity: 0.75 })); }, 1500);
+    k.layers.forEach(l => { l.setStyle({ weight:4, fillOpacity:0.95 }); });
+    setTimeout(() => { k.layers.forEach(l => l.setStyle({ weight:2, fillOpacity:0.75 })); }, 1500);
   }
 }
 
@@ -826,9 +825,9 @@ function closeModal(e) {
 function downloadCSV() {
   if (!currentKTH) return;
   const k = kthMap[currentKTH];
-  const headers = ['No','ID Lahan','Nama Petani','KTH','Desa','Program','Luas (ha)','Tgl Realisasi'];
+  const headers = ['No','ID Lahan','Nama Petani','KTH','Desa','Tipe','Program','Luas (ha)','Tgl Realisasi'];
   const rows = k.rows.map((r, i) => [
-    i + 1, r.id, r.petani, r.kth, r.desa,
+    i + 1, r.id, r.petani, r.kth, r.desa, r.tipe,
     PROG[r.prog]?.label || r.prog, r.luas, r.tgl
   ]);
   const csv = [headers, ...rows]
@@ -855,12 +854,7 @@ function fitAll() {
   lgTemb.eachLayer(l => layers.push(l));
   if (layers.length) {
     map.fitBounds(L.featureGroup(layers).getBounds().pad(0.1));
-    // ── ANTI-GLITCH #5 ───────────────────────────────────────────────────
-    // Setelah fitBounds selesai, paksa invalidateSize sekali lagi
-    // untuk memastikan tile grid sesuai dengan ukuran container final
-    setTimeout(() => {
-      map.invalidateSize({ animate: false, pan: false });
-    }, 100);
+    setTimeout(() => { map.invalidateSize({ animate:false, pan:false }); }, 100);
   }
 }
 
@@ -872,16 +866,9 @@ function setLoad(msg, isErr = false) {
   if (isErr) { s.style.display='none'; t.style.color='#dc2626'; t.style.maxWidth='260px'; t.style.textAlign='center'; t.style.lineHeight='1.5'; }
 }
 
-// ── ANTI-GLITCH #6 ─────────────────────────────────────────────────────────
-// Saat loading overlay disembunyikan, ukuran map container bisa berubah
-// karena overlay tidak lagi overlay-ing. Fire invalidateSize setelahnya.
 function hideLoad() {
   document.getElementById('loadingOverlay').style.display = 'none';
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      map.invalidateSize({ animate: false, pan: false });
-    });
-  });
+  requestAnimationFrame(() => { requestAnimationFrame(() => { map.invalidateSize({ animate:false, pan:false }); }); });
 }
 
 function str(v)  { return (v ?? '').toString().trim(); }
