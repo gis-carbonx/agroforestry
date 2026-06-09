@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Planting monitoring</title>
+  <title>Draft</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -26,8 +26,7 @@
     }
     html,body{height:100%;font-family:'DM Sans',system-ui,sans-serif;font-size:14px;color:var(--text);background:var(--bg);overflow:hidden}
 
-    /* ── HEADER ── */
-    .hdr{position:absolute;top:0;left:0;right:0;height:var(--hdr-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:200}
+    .hdr{height:var(--hdr-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:relative;z-index:200}
     .hdr-left{display:flex;align-items:center;gap:10px}
     .hdr-logo{height:36px;width:auto;object-fit:contain}
     .hdr-logo-fallback{width:36px;height:36px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-lt) 100%);display:grid;place-items:center}
@@ -48,8 +47,7 @@
     .menu-item:hover svg{color:var(--primary-lt)}
     .menu-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
-    /* ── STATS BAR ── */
-    .stats-bar{position:absolute;top:var(--hdr-h);left:0;right:0;height:var(--stats-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;overflow-x:auto;z-index:150}
+    .stats-bar{height:var(--stats-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;overflow-x:auto}
     .sc{flex:1;min-width:190px;padding:14px 20px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--border-lt);transition:background .15s}
     .sc:last-child{border-right:none}
     .sc:hover{background:var(--primary-bg)}
@@ -59,8 +57,9 @@
     .sc-meta-item{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;color:var(--text-2);white-space:nowrap}
     .dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
-    /* ── SIDEBAR: absolute dari viewport, bukan dari flex parent ── */
-    .sb{position:absolute;top:calc(var(--hdr-h) + var(--stats-h));left:0;bottom:0;width:var(--sb-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;z-index:100}
+    .app-body{height:calc(100vh - var(--hdr-h) - var(--stats-h));display:flex;overflow:hidden}
+
+    .sb{width:var(--sb-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
     .sb-hd{padding:13px 15px;border-bottom:1px solid var(--border-lt)}
     .sb-hd-row{display:flex;align-items:center;justify-content:space-between}
     .sb-ttl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--text-2)}
@@ -107,11 +106,11 @@
     .leg-sq{width:12px;height:12px;border-radius:2px;flex-shrink:0;border:2px solid rgba(0,0,0,.2)}
     .leg-dash{width:18px;border-top:2px dashed #94a3b8;flex-shrink:0}
 
-    /* ── MAP: absolute langsung dari viewport, tidak bergantung flex parent ── */
-    #map{position:absolute;top:calc(var(--hdr-h) + var(--stats-h));left:var(--sb-w);right:0;bottom:0;z-index:50}
+    .map-wrap{flex:1;position:relative;overflow:hidden;min-width:0;min-height:0}
+    #map{position:absolute;inset:0;width:100%;height:100%}
     .leaflet-control-scale-line{font-family:'DM Sans',sans-serif;font-size:11px}
 
-    .basemap-panel{position:absolute;bottom:10px;left:calc(var(--sb-w) + 16px);z-index:900;display:flex;flex-direction:column;gap:6px}
+    .basemap-panel{position:absolute;bottom:10px;left:16px;z-index:900;display:flex;flex-direction:column;gap:6px}
     .basemap-label-row{font-size:8px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.7px;padding-left:2px}
     .basemap-pills{display:flex;gap:5px;flex-wrap:wrap}
     .bm-pill{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:transform .15s}
@@ -121,7 +120,7 @@
     .bm-thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block}
     .bm-name{font-size:8px;font-weight:600;color:#374151;background:rgba(255,255,255,.88);padding:2px 5px;border-radius:4px;line-height:1.3;text-align:center;max-width:46px;backdrop-filter:blur(4px)}
 
-    .loading-overlay{position:absolute;top:calc(var(--hdr-h) + var(--stats-h));left:var(--sb-w);right:0;bottom:0;z-index:998;background:rgba(255,255,255,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(2px)}
+    .loading-overlay{position:absolute;inset:0;z-index:998;background:rgba(255,255,255,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(2px)}
     .spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     .load-txt{font-size:13px;color:var(--text-2);font-weight:500}
@@ -259,79 +258,83 @@
   </div>
 </div>
 
-<aside class="sb">
-  <div class="sb-hd">
-    <div class="sb-hd-row">
-      <div class="sb-ttl">KTH Terdaftar</div>
-      <div class="sb-count" id="kthCount">—</div>
-    </div>
-    <div class="sb-hint">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-      Zoom &nbsp;
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-      Tabel &nbsp;
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-      On/Off
-    </div>
-  </div>
-  <div class="kth-scroll" id="kthList">
-    <div class="empty-state">Memuat data...</div>
-  </div>
-  <div class="sb-foot">
-    <div class="sb-sec">
-      <div class="sec-ttl">Kontrol Layer</div>
-      <div class="lyr-row" onclick="toggleLayer('agro')"><div class="toggle" id="tog-agro"></div><span class="lyr-lbl">Lahan Agroforestri</span></div>
-      <div class="lyr-row" onclick="toggleLayer('temb')"><div class="toggle" id="tog-temb"></div><span class="lyr-lbl">Lahan Tembawang</span></div>
-      <div class="lyr-row" onclick="toggleLayer('cmi')"><div class="toggle" id="tog-cmi"></div><span class="lyr-lbl">Batas Area CMI</span></div>
-    </div>
-    <div class="sb-sec">
-      <div class="sec-ttl">Legenda</div>
-      <div class="leg-grid">
-        <div class="leg-item"><div class="leg-sq" style="background:var(--c-agro-reg-lt);border-color:var(--c-agro-reg)"></div><span>Agro Reguler</span></div>
-        <div class="leg-item"><div class="leg-sq" style="background:var(--c-agro-bpo-lt);border-color:var(--c-agro-bpo)"></div><span>Agro BPO</span></div>
-        <div class="leg-item"><div class="leg-sq" style="background:var(--c-temb-reg-lt);border-color:var(--c-temb-reg)"></div><span>Temb. Reguler</span></div>
-        <div class="leg-item"><div class="leg-sq" style="background:var(--c-temb-mtl-lt);border-color:var(--c-temb-mtl)"></div><span>Temb. MTL</span></div>
-        <div class="leg-item" style="grid-column:span 2"><div class="leg-dash"></div><span>Batas CMI</span></div>
+<div class="app-body">
+  <aside class="sb">
+    <div class="sb-hd">
+      <div class="sb-hd-row">
+        <div class="sb-ttl">KTH Terdaftar</div>
+        <div class="sb-count" id="kthCount">—</div>
+      </div>
+      <div class="sb-hint">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Zoom &nbsp;
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Tabel &nbsp;
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        On/Off
       </div>
     </div>
+    <div class="kth-scroll" id="kthList">
+      <div class="empty-state">Memuat data...</div>
+    </div>
+    <div class="sb-foot">
+      <div class="sb-sec">
+        <div class="sec-ttl">Kontrol Layer</div>
+        <div class="lyr-row" onclick="toggleLayer('agro')"><div class="toggle" id="tog-agro"></div><span class="lyr-lbl">Lahan Agroforestri</span></div>
+        <div class="lyr-row" onclick="toggleLayer('temb')"><div class="toggle" id="tog-temb"></div><span class="lyr-lbl">Lahan Tembawang</span></div>
+        <div class="lyr-row" onclick="toggleLayer('cmi')"><div class="toggle" id="tog-cmi"></div><span class="lyr-lbl">Batas Area CMI</span></div>
+      </div>
+      <div class="sb-sec">
+        <div class="sec-ttl">Legenda</div>
+        <div class="leg-grid">
+          <div class="leg-item"><div class="leg-sq" style="background:var(--c-agro-reg-lt);border-color:var(--c-agro-reg)"></div><span>Agro Reguler</span></div>
+          <div class="leg-item"><div class="leg-sq" style="background:var(--c-agro-bpo-lt);border-color:var(--c-agro-bpo)"></div><span>Agro BPO</span></div>
+          <div class="leg-item"><div class="leg-sq" style="background:var(--c-temb-reg-lt);border-color:var(--c-temb-reg)"></div><span>Temb. Reguler</span></div>
+          <div class="leg-item"><div class="leg-sq" style="background:var(--c-temb-mtl-lt);border-color:var(--c-temb-mtl)"></div><span>Temb. MTL</span></div>
+          <div class="leg-item" style="grid-column:span 2"><div class="leg-dash"></div><span>Batas CMI</span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="map-wrap" id="mapWrap">
+    <div id="map"></div>
+
+    <div class="basemap-panel" id="basemapPanel">
+      <div class="basemap-label-row">Basemap</div>
+      <div class="basemap-pills">
+        <div class="bm-pill" id="bm_esri_imagery" onclick="switchBasemap('esri_imagery')" title="ESRI Satellite">
+          <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/5/16/26" alt="ESRI"></div>
+          <div class="bm-name">ESRI St</div>
+        </div>
+        <div class="bm-pill" id="bm_google_satellite" onclick="switchBasemap('google_satellite')" title="Google Satellite">
+          <div class="bm-thumb-wrap"><img src="https://mt1.google.com/vt/lyrs=s&x=26&y=16&z=5" alt="Google"></div>
+          <div class="bm-name">Google</div>
+        </div>
+        <div class="bm-pill" id="bm_esri_topo" onclick="switchBasemap('esri_topo')" title="ESRI Topo">
+          <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/5/16/26" alt="Topo"></div>
+          <div class="bm-name">Topo</div>
+        </div>
+        <div class="bm-pill" id="bm_osm" onclick="switchBasemap('osm')" title="OpenStreetMap">
+          <div class="bm-thumb-wrap"><img src="https://tile.openstreetmap.org/5/26/16.png" alt="OSM"></div>
+          <div class="bm-name">Streets</div>
+        </div>
+        <div class="bm-pill active" id="bm_carto_light" onclick="switchBasemap('carto_light')" title="Carto Light">
+          <div class="bm-thumb-wrap"><img src="https://basemaps.cartocdn.com/light_all/5/26/16.png" alt="Light"></div>
+          <div class="bm-name">Light</div>
+        </div>
+        <div class="bm-pill" id="bm_carto_dark" onclick="switchBasemap('carto_dark')" title="Dark">
+          <div class="bm-thumb-wrap" style="background:#1a1a2e"><img src="https://basemaps.cartocdn.com/dark_all/5/26/16.png" alt="Dark"></div>
+          <div class="bm-name">Dark</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="spinner"></div>
+      <div class="load-txt" id="loadTxt">Menginisialisasi...</div>
+    </div>
   </div>
-</aside>
-
-<div id="map"></div>
-
-<div class="basemap-panel" id="basemapPanel">
-  <div class="basemap-label-row">Basemap</div>
-  <div class="basemap-pills">
-    <div class="bm-pill" id="bm_esri_imagery" onclick="switchBasemap('esri_imagery')" title="ESRI Satellite">
-      <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/5/16/26" alt="ESRI"></div>
-      <div class="bm-name">ESRI St</div>
-    </div>
-    <div class="bm-pill" id="bm_google_satellite" onclick="switchBasemap('google_satellite')" title="Google Satellite">
-      <div class="bm-thumb-wrap"><img src="https://mt1.google.com/vt/lyrs=s&x=26&y=16&z=5" alt="Google"></div>
-      <div class="bm-name">Google</div>
-    </div>
-    <div class="bm-pill" id="bm_esri_topo" onclick="switchBasemap('esri_topo')" title="ESRI Topo">
-      <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/5/16/26" alt="Topo"></div>
-      <div class="bm-name">Topo</div>
-    </div>
-    <div class="bm-pill" id="bm_osm" onclick="switchBasemap('osm')" title="OpenStreetMap">
-      <div class="bm-thumb-wrap"><img src="https://tile.openstreetmap.org/5/26/16.png" alt="OSM"></div>
-      <div class="bm-name">Streets</div>
-    </div>
-    <div class="bm-pill active" id="bm_carto_light" onclick="switchBasemap('carto_light')" title="Carto Light">
-      <div class="bm-thumb-wrap"><img src="https://basemaps.cartocdn.com/light_all/5/26/16.png" alt="Light"></div>
-      <div class="bm-name">Light</div>
-    </div>
-    <div class="bm-pill" id="bm_carto_dark" onclick="switchBasemap('carto_dark')" title="Dark">
-      <div class="bm-thumb-wrap" style="background:#1a1a2e"><img src="https://basemaps.cartocdn.com/dark_all/5/26/16.png" alt="Dark"></div>
-      <div class="bm-name">Dark</div>
-    </div>
-  </div>
-</div>
-
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="load-txt" id="loadTxt">Menginisialisasi...</div>
 </div>
 
 <!-- KTH TABLE MODAL -->
@@ -398,26 +401,22 @@ const BASEMAPS = {
 };
 let currentBasemap = 'carto_light';
 
-/* ── FIX UTAMA: inisialisasi map dengan center+zoom langsung,
-   persis seperti patrol map yang tidak glitch.
-   Tidak perlu window.load / setTimeout / invalidateSize chain
-   karena #map sudah punya dimensi pasti dari absolute positioning. ── */
-const map = L.map('map', {
-  center: [1.0, 111.5],
-  zoom: 9,
-  zoomControl: false,
-  fadeAnimation: true,
-  zoomAnimation: true,
-  markerZoomAnimation: true,
-});
-
+const map = L.map('map', { zoomControl:false, fadeAnimation:true, zoomAnimation:true, markerZoomAnimation:true });
 L.control.zoom({ position:'topright' }).addTo(map);
 L.control.scale({ position:'bottomright', metric:true, imperial:false }).addTo(map);
-BASEMAPS.carto_light.addTo(map);
+map.setView([1.0, 111.5], 9);
 
-/* ResizeObserver tetap ada untuk handle resize window */
-new ResizeObserver(() => { map.invalidateSize({ animate:false, pan:false }); })
-  .observe(document.getElementById('map'));
+const resizeObserver = new ResizeObserver(() => { map.invalidateSize({ animate:false, pan:false }); });
+resizeObserver.observe(document.getElementById('map'));
+
+requestAnimationFrame(() => {
+  BASEMAPS.carto_light.addTo(map);
+  requestAnimationFrame(() => { map.invalidateSize({ animate:false, pan:false }); });
+});
+
+window.addEventListener('load', () => {
+  requestAnimationFrame(() => { requestAnimationFrame(() => { map.invalidateSize({ animate:false, pan:false }); }); });
+});
 
 function switchBasemap(key) {
   if (key === currentBasemap) return;
@@ -474,38 +473,69 @@ let featureMap = {};
 async function getText(url) { const r = await fetch(url); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }
 async function getJSON(url)  { const r = await fetch(url); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FUNGSI UTAMA: Tentukan program dari kolom K/L/M/N (angka) atau fallback ke
+// kolom E (Tipe) jika semua angka 0/kosong.
+// Kolom baru (setelah penambahan Tipe di kolom E):
+//   A=No, B=Grid, C=KTH, D=Luas, E=Tipe, F=Petani,
+//   G=Jenis Kelamin, H=Desa, I=ID_Petak, J=Tgl_Realisasi,
+//   K=Agro_Reg, L=Agro_BPO, M=Temb_Reg, N=Temb_MTL
+// ─────────────────────────────────────────────────────────────────────────────
 function resolveProgram(aReg, aBPO, tReg, tMTL, tipeStr) {
+  // Prioritas 1: ada nilai angka di kolom program
   if (aReg > 0) return 'Agro_Reg';
   if (aBPO > 0) return 'Agro_BPO';
   if (tReg > 0) return 'Temb_Reg';
   if (tMTL > 0) return 'Temb_MTL';
+
+  // Prioritas 2: fallback dari kolom Tipe (E)
   const t = tipeStr.toLowerCase().trim();
   if (t.includes('tembawang')) return 'Temb_Reg';
   if (t.includes('agroforestri') || t.includes('agroforestry')) return 'Agro_Reg';
+
+  // Tidak bisa ditentukan
   return null;
 }
 
 function parseSheet(csvText) {
   const { data } = Papa.parse(csvText, { header:true, skipEmptyLines:true, transformHeader: h => h.trim() });
+
   data.forEach(raw => {
-    const id = str(raw['ID_Petak'] || raw['id_petak'] || raw['ID Petak'] || raw['I'] || '');
+    // ── ID Petak ──────────────────────────────────────────────────────────
+    // Header name bisa beragam; coba beberapa kemungkinan + fallback kolom I
+    const id = str(
+      raw['ID_Petak'] || raw['id_petak'] || raw['ID Petak'] ||
+      raw['I'] || ''
+    );
     if (!id) return;
-    const kth    = str(raw['KTH']           || raw['C'] || '');
-    const luas   = num(raw['Luas']          || raw['D'] || 0);
-    const tipe   = str(raw['Tipe']          || raw['E'] || '');
-    const petani = str(raw['Petani']        || raw['F'] || '');
-    const jk     = str(raw['Jenis Kelamin'] || raw['Jenis_Kelamin'] || raw['G'] || '');
-    const desa   = str(raw['Desa']          || raw['H'] || '');
-    const tgl    = str(raw['Tgl_Realisasi'] || raw['Tgl Realisasi'] || raw['J'] || '');
+
+    // ── Kolom data (header-based lebih andal dari index) ──────────────────
+    const kth    = str(raw['KTH']            || raw['C'] || '');
+    const luas   = num(raw['Luas']           || raw['D'] || 0);
+    const tipe   = str(raw['Tipe']           || raw['E'] || '');   // ← KOLOM BARU
+    const petani = str(raw['Petani']         || raw['F'] || '');
+    const jk     = str(raw['Jenis Kelamin']  || raw['Jenis_Kelamin'] || raw['G'] || '');
+    const desa   = str(raw['Desa']           || raw['H'] || '');
+    const tgl    = str(raw['Tgl_Realisasi']  || raw['Tgl Realisasi'] || raw['J'] || '');
+
+    // ── Nilai program (kolom K–N) ─────────────────────────────────────────
     const aReg = num(raw['Agro_Reg'] || raw['Agro Reg'] || raw['K'] || 0);
     const aBPO = num(raw['Agro_BPO'] || raw['Agro BPO'] || raw['L'] || 0);
     const tReg = num(raw['Temb_Reg'] || raw['Temb Reg'] || raw['M'] || 0);
     const tMTL = num(raw['Temb_MTL'] || raw['Temb MTL'] || raw['N'] || 0);
+
+    // ── Tentukan program ──────────────────────────────────────────────────
     const prog = resolveProgram(aReg, aBPO, tReg, tMTL, tipe);
-    if (!prog) return;
-    const luasFinal = luas > 0 ? luas : (aReg || aBPO || tReg || tMTL || 0);
+    if (!prog) return; // lewati baris yang tidak bisa ditentukan programnya
+
+    // ── Pastikan luas terisi: jika 0 tapi ada nilai di kolom program, pakai itu
+    const luasFinal = luas > 0 ? luas
+      : (aReg || aBPO || tReg || tMTL || 0);
+
+    // ── Simpan ke sheetMap ────────────────────────────────────────────────
     sheetMap[id] = { id, kth, luas: luasFinal, tipe, petani, jk, desa, tgl, aReg, aBPO, tReg, tMTL, prog };
   });
+
   console.log(`[sheet] ${Object.keys(sheetMap).length} baris valid dimuat`);
 }
 
@@ -518,38 +548,58 @@ function renderCMI(gj) {
 function renderAgro(gj) {
   const features = gj.type === 'FeatureCollection' ? gj.features : [gj];
   let rendered = 0;
+
   features.forEach(feat => {
     const props   = feat.properties || {};
-    const idLahan = str(props.id_lahan || props.ID_Petak || props.id_petak || props.ID_LAHAN || props.Id_Lahan || props.IDLAHAN || '');
+    // Coba berbagai nama field id lahan di GeoJSON
+    const idLahan = str(
+      props.id_lahan || props.ID_Petak || props.id_petak ||
+      props.ID_LAHAN || props.Id_Lahan || props.IDLAHAN || ''
+    );
     if (!idLahan) return;
+
     const row = sheetMap[idLahan];
-    if (!row) return;
-    if (!PROG[row.prog]) return;
+    if (!row) return;               // tidak ada di sheet
+    if (!PROG[row.prog]) return;    // program tidak dikenali
+
     matched.add(idLahan);
     rendered++;
     const st = PROG[row.prog];
+
     const layer = L.geoJSON(feat, {
       style: () => ({ color:st.stroke, weight:2, fillColor:st.fill, fillOpacity:0.75, opacity:1 })
     });
+
     layer.bindPopup(() => buildPopup(feat, row), { maxWidth:270, minWidth:220, autoPan:true });
     layer.on('mouseover', e => { e.target.setStyle({ fillOpacity:0.92, weight:3 }); e.target.bringToFront(); });
     layer.on('mouseout',  e => { e.target.setStyle({ fillOpacity:0.75, weight:2 }); });
+
     const target = st.group === 'agro' ? lgAgro : lgTemb;
     target.addLayer(layer);
+
     featureMap[idLahan] = { feature:feat, row, layer };
+
     if (!kthMap[row.kth]) {
-      kthMap[row.kth] = { name:row.kth, desa:row.desa, agro:0, temb:0, aReg:0, aBPO:0, tReg:0, tMTL:0, layers:[], rows:[], petaniSet: new Set() };
+      kthMap[row.kth] = {
+        name:row.kth, desa:row.desa,
+        agro:0, temb:0, aReg:0, aBPO:0, tReg:0, tMTL:0,
+        layers:[], rows:[], petaniSet: new Set(),
+      };
       kthVisState[row.kth] = true;
     }
     const k = kthMap[row.kth];
-    k.agro += row.aReg + row.aBPO; k.temb += row.tReg + row.tMTL;
+    k.agro += row.aReg + row.aBPO;
+    k.temb += row.tReg + row.tMTL;
     k.aReg += row.aReg; k.aBPO += row.aBPO; k.tReg += row.tReg; k.tMTL += row.tMTL;
     k.petaniSet.add(row.petani.toLowerCase());
-    k.layers.push(layer); k.rows.push(row);
+    k.layers.push(layer);
+    k.rows.push(row);
   });
+
   Object.entries(kthMap).forEach(([name, k]) => {
     if (k.layers.length) kthBounds[name] = L.featureGroup(k.layers).getBounds();
   });
+
   console.log(`[geo] ${rendered} polygon dirender dari ${features.length} fitur GeoJSON`);
 }
 
@@ -576,7 +626,10 @@ function zoomToLahan(id) {
   if (!entry) return;
   document.getElementById('kthModal').style.display = 'none';
   currentKTH = null;
-  try { const bounds = L.geoJSON(entry.feature).getBounds(); map.fitBounds(bounds.pad(0.5)); } catch(e) {}
+  try {
+    const bounds = L.geoJSON(entry.feature).getBounds();
+    map.fitBounds(bounds.pad(0.5));
+  } catch(e) {}
   entry.layer.setStyle({ weight:4, fillOpacity:0.95 });
   setTimeout(() => { entry.layer.setStyle({ weight:2, fillOpacity:0.75 }); }, 2000);
   setTimeout(() => { try { entry.layer.openPopup(); } catch(e) {} }, 400);
@@ -585,24 +638,33 @@ function zoomToLahan(id) {
 function calcStats() {
   let totalHa = 0, aReg = 0, aBPO = 0, tReg = 0, tMTL = 0;
   const uniq = new Set(), laki = new Set(), pmp = new Set();
+
   Object.values(sheetMap).forEach(r => {
     if (!matched.has(r.id)) return;
+
+    // Hitung luas: ambil dari kolom luas, atau sum dari kolom program
     const luasEfektif = r.luas > 0 ? r.luas : (r.aReg + r.aBPO + r.tReg + r.tMTL);
     totalHa += luasEfektif;
+
+    // Hitung per-program — jika kolom K-N kosong/0, pakai luas dari tipe
     if (r.aReg > 0 || r.aBPO > 0 || r.tReg > 0 || r.tMTL > 0) {
       aReg += r.aReg; aBPO += r.aBPO; tReg += r.tReg; tMTL += r.tMTL;
     } else {
+      // fallback: akumulasi ke program yang ditentukan dari kolom Tipe
       if      (r.prog === 'Agro_Reg') aReg += luasEfektif;
       else if (r.prog === 'Agro_BPO') aBPO += luasEfektif;
       else if (r.prog === 'Temb_Reg') tReg += luasEfektif;
       else if (r.prog === 'Temb_MTL') tMTL += luasEfektif;
     }
+
     if (r.petani) {
-      const pk = r.petani.toLowerCase(); uniq.add(pk);
+      const pk = r.petani.toLowerCase();
+      uniq.add(pk);
       if      (r.jk.toLowerCase().includes('laki'))      laki.add(pk);
       else if (r.jk.toLowerCase().includes('perempuan')) pmp.add(pk);
     }
   });
+
   setText('sTotalHa',   fmt(totalHa) + ' ha');
   setText('sTotalMeta', matched.size + ' petak lahan');
   setText('sAgroHa',    fmt(aReg + aBPO) + ' ha');
@@ -621,10 +683,12 @@ function renderKTHList() {
   setText('kthCount', list.length);
   const el = document.getElementById('kthList');
   if (!list.length) { el.innerHTML = '<div class="empty-state">Tidak ada data KTH</div>'; return; }
-  const eyeIcon   = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-  const tblIcon   = `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`;
-  const visOnIcon = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-  const visOffIcon= `<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+  const eyeIcon    = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const tblIcon    = `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`;
+  const visOnIcon  = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const visOffIcon = `<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
   el.innerHTML = list.map(k => {
     const isOn = kthVisState[k.name] !== false;
     return `
@@ -649,22 +713,38 @@ function renderKTHList() {
 }
 
 function toggleKTHVis(name) {
-  const k = kthMap[name]; if (!k) return;
+  const k = kthMap[name];
+  if (!k) return;
   const wasOn = kthVisState[name] !== false;
   kthVisState[name] = !wasOn;
   const isOn = kthVisState[name];
-  const visOnIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-  const visOffIcon= `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+  const visOnIcon  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const visOffIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
   k.layers.forEach(l => {
     if (isOn) {
       const row = k.rows.find(r => featureMap[r.id]?.layer === l);
-      if (row) { const st = PROG[row.prog]; const target = st.group === 'agro' ? lgAgro : lgTemb; target.addLayer(l); }
-    } else { lgAgro.removeLayer(l); lgTemb.removeLayer(l); }
+      if (row) {
+        const st = PROG[row.prog];
+        const target = st.group === 'agro' ? lgAgro : lgTemb;
+        target.addLayer(l);
+      }
+    } else {
+      lgAgro.removeLayer(l);
+      lgTemb.removeLayer(l);
+    }
   });
+
   const card = document.querySelector(`.kth-card[data-kth="${name}"]`);
   if (card) card.classList.toggle('hidden-kth', !isOn);
+
   const btn = document.getElementById('visbtn-' + name);
-  if (btn) { btn.className = `kth-btn ${isOn ? 'vis-on' : 'vis-off'}`; btn.title = isOn ? 'Sembunyikan lahan KTH ini' : 'Tampilkan lahan KTH ini'; btn.innerHTML = isOn ? visOnIcon : visOffIcon; }
+  if (btn) {
+    btn.className = `kth-btn ${isOn ? 'vis-on' : 'vis-off'}`;
+    btn.title = isOn ? 'Sembunyikan lahan KTH ini' : 'Tampilkan lahan KTH ini';
+    btn.innerHTML = isOn ? visOnIcon : visOffIcon;
+  }
 }
 
 function zoomKTH(name) {
@@ -680,13 +760,17 @@ function zoomKTH(name) {
 }
 
 function openKTH(name) {
-  const k = kthMap[name]; if (!k) return;
+  const k = kthMap[name];
+  if (!k) return;
   currentKTH = name;
+
   document.querySelectorAll('.kth-card').forEach(el => el.classList.remove('active'));
   const card = document.querySelector(`.kth-card[data-kth="${name}"]`);
   if (card) { card.classList.add('active'); card.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+
   setText('modalTitle', k.name);
   setText('modalSub', `${k.desa} · ${k.rows.length} lahan · ${k.petaniSet.size} petani`);
+
   const total = k.agro + k.temb;
   document.getElementById('modalStats').innerHTML = `
     <div class="kth-stat-box"><div class="kth-stat-lbl">Total Lahan</div><div class="kth-stat-val" style="color:var(--primary)">${fmt(total)} ha</div></div>
@@ -694,10 +778,13 @@ function openKTH(name) {
     <div class="kth-stat-box"><div class="kth-stat-lbl">Tembawang</div><div class="kth-stat-val" style="color:var(--c-temb-reg)">${fmt(k.temb)} ha</div></div>
     <div class="kth-stat-box"><div class="kth-stat-lbl">Jumlah Petani</div><div class="kth-stat-val" style="color:#3b82f6">${k.petaniSet.size}</div></div>
     <div class="kth-stat-box"><div class="kth-stat-lbl">Jumlah Petak</div><div class="kth-stat-val">${k.rows.length}</div></div>`;
+
   document.getElementById('modalSearchInput').value = '';
   document.getElementById('noResults').style.display = 'none';
   setText('modalRowCount', k.rows.length + ' lahan');
+
   const eyeIcon = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+
   document.getElementById('modalTbody').innerHTML = k.rows.map((r, i) => {
     const st = PROG[r.prog];
     return `<tr data-petani="${esc(r.petani.toLowerCase())}">
@@ -711,6 +798,7 @@ function openKTH(name) {
       <td style="color:var(--text-2)">${esc(r.tgl)||'—'}</td>
     </tr>`;
   }).join('');
+
   document.getElementById('kthModal').style.display = 'flex';
 }
 
@@ -738,8 +826,13 @@ function downloadCSV() {
   if (!currentKTH) return;
   const k = kthMap[currentKTH];
   const headers = ['No','ID Lahan','Nama Petani','KTH','Desa','Tipe','Program','Luas (ha)','Tgl Realisasi'];
-  const rows = k.rows.map((r, i) => [i+1, r.id, r.petani, r.kth, r.desa, r.tipe, PROG[r.prog]?.label||r.prog, r.luas, r.tgl]);
-  const csv = [headers, ...rows].map(r => r.map(v => `"${str(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const rows = k.rows.map((r, i) => [
+    i + 1, r.id, r.petani, r.kth, r.desa, r.tipe,
+    PROG[r.prog]?.label || r.prog, r.luas, r.tgl
+  ]);
+  const csv = [headers, ...rows]
+    .map(r => r.map(v => `"${str(v).replace(/"/g,'""')}"`).join(','))
+    .join('\n');
   const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -759,7 +852,10 @@ function fitAll() {
   const layers = [];
   lgAgro.eachLayer(l => layers.push(l));
   lgTemb.eachLayer(l => layers.push(l));
-  if (layers.length) map.fitBounds(L.featureGroup(layers).getBounds().pad(0.1));
+  if (layers.length) {
+    map.fitBounds(L.featureGroup(layers).getBounds().pad(0.1));
+    setTimeout(() => { map.invalidateSize({ animate:false, pan:false }); }, 100);
+  }
 }
 
 function setLoad(msg, isErr = false) {
@@ -772,6 +868,7 @@ function setLoad(msg, isErr = false) {
 
 function hideLoad() {
   document.getElementById('loadingOverlay').style.display = 'none';
+  requestAnimationFrame(() => { requestAnimationFrame(() => { map.invalidateSize({ animate:false, pan:false }); }); });
 }
 
 function str(v)  { return (v ?? '').toString().trim(); }
