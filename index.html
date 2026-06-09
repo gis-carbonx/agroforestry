@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Planting Monitoring 1</title>
+  <title>Planting Monitoring</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -46,7 +46,6 @@
     .menu-item:hover{background:var(--primary-bg);color:var(--primary-md)}
     .menu-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;color:var(--text-2)}
     .menu-item:hover svg{color:var(--primary-lt)}
-    .menu-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
     .stats-bar{height:var(--stats-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;overflow-x:auto;z-index:10}
     .sc{flex:1;min-width:190px;padding:14px 20px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--border-lt);transition:background .15s}
@@ -139,7 +138,7 @@
     .pop-val{font-size:12px;font-weight:600;color:var(--text);text-align:right;word-break:break-word}
 
     .modal-overlay{position:fixed;inset:0;z-index:900;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
-    .kth-modal{background:#fff;border-radius:14px;width:min(880px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
+    .kth-modal{background:#fff;border-radius:14px;width:min(900px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
     .kth-modal-hd{padding:16px 20px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
     .kth-modal-title{font-size:15px;font-weight:700}
     .kth-modal-sub{font-size:12px;opacity:.8;margin-top:1px}
@@ -158,8 +157,6 @@
     .modal-count{font-size:12px;color:var(--text-2);font-weight:600;white-space:nowrap}
     .btn-dl{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:600;color:var(--primary-md);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
     .btn-dl:hover{background:var(--primary-bg);border-color:var(--primary-lt)}
-    .btn-print{padding:7px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;font-size:12px;font-weight:600;color:#7b1fa2;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
-    .btn-print:hover{background:#f3e8ff;border-color:#e9d5ff}
     .kth-modal-body{overflow-y:auto;padding:0}
     .kth-tbl{width:100%;border-collapse:collapse;font-size:12px}
     .kth-tbl thead tr{background:#f8fafc;position:sticky;top:0;z-index:1}
@@ -176,6 +173,9 @@
     .row-eye-btn{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;color:var(--text-2);transition:all .15s}
     .row-eye-btn:hover{background:#eff6ff;border-color:#93c5fd;color:#2563eb}
     .row-eye-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .row-print-btn{width:24px;height:24px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;display:grid;place-items:center;color:#7b1fa2;transition:all .15s;flex-shrink:0}
+    .row-print-btn:hover{background:#f3e8ff;border-color:#d8b4fe}
+    .row-print-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
     .no-results{text-align:center;padding:28px 16px;color:var(--text-3);font-size:13px}
 
     ::-webkit-scrollbar{width:4px;height:4px}
@@ -183,29 +183,7 @@
     ::-webkit-scrollbar-track{background:transparent}
     .empty-state{text-align:center;padding:32px 16px;color:var(--text-3);font-size:13px}
 
-    /* PDF Print Styles */
-    .pdf-container{display:none;width:210mm;height:297mm;background:#fff;padding:0}
-    .pdf-header{padding:20px;background:linear-gradient(135deg,#1b5e40 0%,#2d7a55 100%);color:#fff;text-align:center;border-bottom:3px solid #52b788}
-    .pdf-header h1{font-size:24px;margin:0;font-weight:700}
-    .pdf-header p{font-size:12px;opacity:.9;margin:4px 0 0 0}
-    .pdf-content{padding:20px;display:flex;flex-direction:column;gap:15px}
-    .pdf-map-container{width:100%;height:200px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
-    .pdf-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:15px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0}
-    .pdf-stat-item{padding:10px}
-    .pdf-stat-label{font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:4px}
-    .pdf-stat-value{font-size:18px;font-weight:800;color:#1b5e40}
-    .pdf-details{padding:15px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0}
-    .pdf-details h3{font-size:12px;font-weight:700;color:#1a2332;margin-bottom:10px;text-transform:uppercase}
-    .pdf-detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:11px}
-    .pdf-detail-row:last-child{border-bottom:none}
-    .pdf-detail-label{color:#64748b;font-weight:600}
-    .pdf-detail-value{color:#1a2332;font-weight:700}
-    .pdf-footer{padding:10px 20px;border-top:1px solid #e2e8f0;font-size:9px;color:#64748b;text-align:center;margin-top:auto}
-    .pdf-table{width:100%;border-collapse:collapse;font-size:10px;margin-top:10px}
-    .pdf-table thead tr{background:#e2e8f0}
-    .pdf-table th{padding:8px;text-align:left;font-weight:700;color:#1a2332;border:1px solid #cbd5e1}
-    .pdf-table td{padding:6px 8px;border:1px solid #e2e8f0}
-    .pdf-table tr:nth-child(even){background:#f8fafc}
+    #printMapContainer{display:none;position:fixed;top:-9999px;left:-9999px}
   </style>
 </head>
 <body>
@@ -380,10 +358,6 @@
       </div>
       <div class="modal-toolbar-right">
         <span class="modal-count" id="modalRowCount">0 lahan</span>
-        <button class="btn-print" id="printBtn" onclick="printMapPDF()" title="Download peta ke PDF">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/></svg>
-          Print Peta
-        </button>
         <button class="btn-dl" onclick="downloadCSV()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Unduh CSV
@@ -393,7 +367,7 @@
     <div class="kth-modal-body">
       <table class="kth-tbl">
         <thead><tr>
-          <th>No</th><th>Lokasi</th><th>ID Lahan</th><th>Nama Petani</th><th>Desa</th>
+          <th>No</th><th style="width:32px">Aksi</th><th>ID Lahan</th><th>Nama Petani</th><th>Desa</th>
           <th>Program</th><th>Luas (ha)</th><th>Tgl Realisasi</th>
         </tr></thead>
         <tbody id="modalTbody"></tbody>
@@ -403,8 +377,8 @@
   </div>
 </div>
 
-<!-- Hidden PDF Container -->
-<div id="pdfContainer" class="pdf-container"></div>
+<!-- Hidden container untuk print map -->
+<div id="printMapContainer"></div>
 
 <script>
 'use strict';
@@ -677,8 +651,6 @@ function buildPopup(feat, row) {
 function zoomToLahan(id) {
   const entry = featureMap[id];
   if (!entry) return;
-  document.getElementById('kthModal').style.display = 'none';
-  currentKTH = null;
   try {
     const bounds = L.geoJSON(entry.feature).getBounds();
     map.fitBounds(bounds.pad(0.5));
@@ -834,12 +806,18 @@ function openKTH(name) {
   setText('modalRowCount', k.rows.length + ' lahan');
 
   const eyeIcon = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const printIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`;
 
   document.getElementById('modalTbody').innerHTML = k.rows.map((r, i) => {
     const st = PROG[r.prog];
     return `<tr data-petani="${esc(r.petani.toLowerCase())}">
       <td style="color:var(--text-3);font-size:11px">${i + 1}</td>
-      <td><button class="row-eye-btn" title="Zoom ke lokasi lahan di peta" onclick="zoomToLahan('${esc(r.id)}')">${eyeIcon}</button></td>
+      <td style="padding:6px 4px">
+        <div style="display:flex;gap:4px">
+          <button class="row-eye-btn" title="Zoom ke lokasi lahan di peta" onclick="zoomToLahan('${esc(r.id)}')">${eyeIcon}</button>
+          <button class="row-print-btn" title="Print peta lahan ini" onclick="printSingleLahan('${esc(r.id)}')">${printIcon}</button>
+        </div>
+      </td>
       <td style="font-family:monospace;font-size:11px">${esc(r.id)}</td>
       <td>${esc(r.petani)}</td>
       <td>${esc(r.desa)}</td>
@@ -890,190 +868,170 @@ function downloadCSV() {
   URL.revokeObjectURL(url);
 }
 
-function printMapPDF() {
-  if (!currentKTH) return;
-  
-  const k = kthMap[currentKTH];
-  const printMap = L.map('printMapInPDF', { 
-    zoomControl:false, 
-    attributionControl:false,
-    dragging:false,
-    touchZoom:false,
-    scrollWheelZoom:false,
-    doubleClickZoom:false
+function printSingleLahan(id) {
+  const entry = featureMap[id];
+  if (!entry) return;
+
+  const container = document.getElementById('printMapContainer');
+  container.innerHTML = '';
+
+  const mapDiv = document.createElement('div');
+  mapDiv.id = 'singlePrintMap';
+  mapDiv.style.width = '800px';
+  mapDiv.style.height = '500px';
+  mapDiv.style.position = 'fixed';
+  mapDiv.style.top = '-9999px';
+  mapDiv.style.left = '-9999px';
+  container.appendChild(mapDiv);
+
+  const printMap = L.map('singlePrintMap', {
+    zoomControl: false,
+    attributionControl: false,
+    dragging: false,
+    touchZoom: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false
   });
 
   BASEMAPS.carto_light.addTo(printMap);
-  
-  const visibleRows = document.querySelectorAll('#modalTbody tr:not(.hidden-row)');
-  const visibleIds = Array.from(visibleRows).map(tr => {
-    const cells = tr.querySelectorAll('td');
-    return cells[2]?.textContent?.trim();
-  }).filter(Boolean);
 
-  const printLayers = L.featureGroup();
-  let hasFeatures = false;
-
-  visibleIds.forEach(id => {
-    const entry = featureMap[id];
-    if (entry) {
-      const st = PROG[entry.row.prog];
-      const layer = L.geoJSON(entry.feature, {
-        style: () => ({ color:st.stroke, weight:2, fillColor:st.fill, fillOpacity:0.75, opacity:1 })
-      });
-      printLayers.addLayer(layer);
-      hasFeatures = true;
-    }
-  });
-
-  printLayers.addTo(printMap);
+  const st = PROG[entry.row.prog];
+  const geoLayer = L.geoJSON(entry.feature, {
+    style: () => ({ color: st.stroke, weight: 2, fillColor: st.fill, fillOpacity: 0.75, opacity: 1 })
+  }).addTo(printMap);
 
   setTimeout(() => {
-    if (hasFeatures) {
-      const bounds = printLayers.getBounds();
-      printMap.fitBounds(bounds.pad(0.1));
-    }
-    
+    const bounds = geoLayer.getBounds();
+    printMap.fitBounds(bounds.pad(0.1));
+
     setTimeout(() => {
-      const mapCanvas = document.querySelector('#printMapInPDF canvas');
-      const mapImage = mapCanvas ? mapCanvas.toDataURL('image/png') : null;
-      
-      generatePDF(k, visibleRows, mapImage);
-      
+      try {
+        const canvas = document.querySelector('#singlePrintMap canvas');
+        if (canvas) {
+          const mapImage = canvas.toDataURL('image/png');
+          generateSingleLahanPDF(entry.row, mapImage);
+        }
+      } catch (e) {
+        console.error('Error generating map image:', e);
+      }
+
       printMap.remove();
-    }, 800);
-  }, 500);
+      mapDiv.remove();
+    }, 1200);
+  }, 800);
 }
 
-function generatePDF(kthData, rows, mapImage) {
+function generateSingleLahanPDF(row, mapImage) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' });
-  
-  let totalLuas = 0;
-  let agroTotal = 0, tembTotal = 0;
-  
-  Array.from(rows).forEach(row => {
-    const cells = row.querySelectorAll('td');
-    const luas = parseFloat(cells[6]?.textContent?.replace(',', '.') || 0);
-    const prog = cells[5]?.textContent?.trim() || '';
-    totalLuas += luas;
-    
-    if (prog.includes('Agro')) agroTotal += luas;
-    else if (prog.includes('Temb')) tembTotal += luas;
-  });
+  const st = PROG[row.prog];
 
-  const tableRows = Array.from(rows).map((row, idx) => {
-    const cells = row.querySelectorAll('td');
-    const prog = cells[5]?.innerHTML || '—';
-    return `
-      <tr>
-        <td>${idx + 1}</td>
-        <td>${cells[2]?.textContent || '—'}</td>
-        <td>${cells[3]?.textContent || '—'}</td>
-        <td>${cells[4]?.textContent || '—'}</td>
-        <td>${prog}</td>
-        <td>${cells[6]?.textContent || '—'}</td>
-        <td>${cells[7]?.textContent || '—'}</td>
-      </tr>
-    `;
-  }).join('');
+  const htmlContent = `
+    <html>
+      <head>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; color: #1a2332; }
+          .page { width: 210mm; height: 297mm; padding: 20px; display: flex; flex-direction: column; }
+          .header { background: linear-gradient(135deg, #1b5e40 0%, #2d7a55 100%); color: white; padding: 20px; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+          .header h1 { font-size: 20px; margin-bottom: 5px; }
+          .header p { font-size: 12px; opacity: 0.9; }
+          .map-container { width: 100%; height: 220px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
+          .map-container img { width: 100%; height: 100%; object-fit: cover; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+          .info-box { padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
+          .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
+          .info-value { font-size: 14px; font-weight: 700; color: #1b5e40; }
+          .details { padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 20px; }
+          .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+          .detail-row:last-child { border-bottom: none; }
+          .detail-label { font-size: 11px; color: #64748b; font-weight: 600; }
+          .detail-value { font-size: 11px; color: #1a2332; font-weight: 700; }
+          .footer { font-size: 9px; color: #64748b; text-align: center; margin-top: auto; padding-top: 10px; border-top: 1px solid #e2e8f0; }
+          .tag { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+          .tag.ar { background: #dcfce7; color: #166534; }
+          .tag.ab { background: #dbeafe; color: #1e40af; }
+          .tag.tr { background: #ffedd5; color: #9a3412; }
+          .tag.tm { background: #f3e8ff; color: #6b21a8; }
+        </style>
+      </head>
+      <body>
+        <div class="page">
+          <div class="header">
+            <h1>Laporan Peta Lahan Agroforestri</h1>
+            <p>${row.kth}</p>
+          </div>
 
-  const html = `
-    <div style="font-family:Arial,sans-serif;padding:0;margin:0">
-      <div style="padding:20px;background:linear-gradient(135deg,#1b5e40 0%,#2d7a55 100%);color:white;text-align:center;border-bottom:3px solid #52b788">
-        <h1 style="margin:0;font-size:24px;font-weight:700">Laporan Peta Lahan Agroforestri</h1>
-        <p style="margin:4px 0 0 0;font-size:12px;opacity:0.9">${kthData.name}</p>
-      </div>
-      
-      <div style="padding:20px">
-        <!-- MAP -->
-        <div style="width:100%;height:200px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;margin-bottom:15px">
-          ${mapImage ? `<img src="${mapImage}" style="width:100%;height:100%;object-fit:cover">` : '<div style="width:100%;height:100%;background:#f0fdf4;display:flex;align-items:center;justify-content:center">Peta tidak tersedia</div>'}
+          <div class="map-container">
+            ${mapImage ? `<img src="${mapImage}" alt="Peta Lahan">` : '<div style="width:100%;height:100%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;color:#64748b">Peta tidak tersedia</div>'}
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-label">Luas Lahan</div>
+              <div class="info-value">${fmt(row.luas)} ha</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Program</div>
+              <div class="tag ${st?.tagCls||''}">${esc(st?.label||row.prog)}</div>
+            </div>
+          </div>
+
+          <div class="details">
+            <div class="detail-row">
+              <span class="detail-label">ID Lahan:</span>
+              <span class="detail-value">${esc(row.id)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Nama Petani:</span>
+              <span class="detail-value">${esc(row.petani)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Jenis Kelamin:</span>
+              <span class="detail-value">${esc(row.jk)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Desa:</span>
+              <span class="detail-value">${esc(row.desa)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Tipe:</span>
+              <span class="detail-value">${esc(row.tipe || '—')}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Tgl Realisasi:</span>
+              <span class="detail-value">${esc(row.tgl || '—')}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Tanggal Cetak:</span>
+              <span class="detail-value">${dateStr}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>Dokumen ini dibuat secara otomatis oleh Sistem Sebaran Lahan Garapan Masyarakat - PT. Citra Mulia Inti</p>
+          </div>
         </div>
-
-        <!-- STATS -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:15px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:15px">
-          <div style="padding:10px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:4px">Total Luas</div>
-            <div style="font-size:18px;font-weight:800;color:#1b5e40">${fmt(totalLuas)} ha</div>
-          </div>
-          <div style="padding:10px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:4px">Agroforestri</div>
-            <div style="font-size:18px;font-weight:800;color:#1a6b3a">${fmt(agroTotal)} ha</div>
-          </div>
-          <div style="padding:10px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:4px">Tembawang</div>
-            <div style="font-size:18px;font-weight:800;color:#b84c00">${fmt(tembTotal)} ha</div>
-          </div>
-          <div style="padding:10px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:4px">Jumlah Petak</div>
-            <div style="font-size:18px;font-weight:800;color:#1b5e40">${kthData.rows.length}</div>
-          </div>
-        </div>
-
-        <!-- DETAILS -->
-        <div style="padding:15px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:15px">
-          <h3 style="font-size:12px;font-weight:700;color:#1a2332;margin:0 0 10px 0;text-transform:uppercase">Informasi KTH</h3>
-          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:11px">
-            <span style="color:#64748b;font-weight:600">Nama KTH</span>
-            <span style="color:#1a2332;font-weight:700">${esc(kthData.name)}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:11px">
-            <span style="color:#64748b;font-weight:600">Desa</span>
-            <span style="color:#1a2332;font-weight:700">${esc(kthData.desa)}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:11px">
-            <span style="color:#64748b;font-weight:600">Jumlah Petani</span>
-            <span style="color:#1a2332;font-weight:700">${kthData.petaniSet.size}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:11px">
-            <span style="color:#64748b;font-weight:600">Tanggal Cetak</span>
-            <span style="color:#1a2332;font-weight:700">${dateStr}</span>
-          </div>
-        </div>
-
-        <!-- TABLE -->
-        <div style="margin-bottom:15px">
-          <h3 style="font-size:12px;font-weight:700;color:#1a2332;margin:0 0 10px 0;text-transform:uppercase">Data Lahan Terpilih</h3>
-          <table style="width:100%;border-collapse:collapse;font-size:10px">
-            <thead>
-              <tr style="background:#e2e8f0">
-                <th style="padding:8px;text-align:left;font-weight:700;color:#1a2332;border:1px solid #cbd5e1">No</th>
-                <th style="padding:8px;text-align:left;font-weight:700;color:#1a2332;border:1px solid #cbd5e1">ID Lahan</th>
-                <th style="padding:8px;text-align:left;font-weight:700;color:#1a2332;border:1px solid #cbd5e1">Petani</th>
-                <th style="padding:8px;text-align:left;font-weight:700;color:#1a2332;border:1px solid #cbd5e1">Desa</th>
-                <th style="padding:8px;text-align:left;font-weight:700;color:#1a2332;border:1px solid #cbd5e1">Program</th>
-                <th style="padding:8px;text-align:left;font-weight:700;color:#1a2332;border:1px solid #cbd5e1">Luas (ha)</th>
-                <th style="padding:8px;text-align:left;font-weight:700;color:#1a2332;border:1px solid #cbd5e1">Tgl Realisasi</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tableRows}
-            </tbody>
-          </table>
-        </div>
-
-        <!-- FOOTER -->
-        <div style="padding:10px 0;border-top:1px solid #e2e8f0;font-size:9px;color:#64748b;text-align:center">
-          <p>Dokumen ini dibuat secara otomatis oleh Sistem Sebaran Lahan Garapan Masyarakat - PT. Citra Mulia Inti</p>
-        </div>
-      </div>
-    </div>
+      </body>
+    </html>
   `;
 
   const element = document.createElement('div');
-  element.innerHTML = html;
+  element.innerHTML = htmlContent;
   document.body.appendChild(element);
 
   const opt = {
-    margin: 5,
-    filename: `Peta_${currentKTH.replace(/\s+/g,'_')}_${now.getTime()}.pdf`,
+    margin: 0,
+    filename: `Lahan_${row.id}_${now.getTime()}.pdf`,
     image: { type: 'png', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
   html2pdf().set(opt).from(element).save().then(() => {
+    document.body.removeChild(element);
+  }).catch(err => {
+    console.error('PDF generation error:', err);
     document.body.removeChild(element);
   });
 }
