@@ -8,6 +8,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -18,15 +19,16 @@
       --c-agro-bpo:#0d5c8a;--c-agro-bpo-lt:#38a3e0;
       --c-temb-reg:#b84c00;--c-temb-reg-lt:#ff8c38;
       --c-temb-mtl:#7b1fa2;--c-temb-mtl-lt:#ce6be8;
-      --bg:#f4f6f9;--surface:#fff;--border:#e2e8f0;--border-lt:#f1f5f9;
+      --bg:#f0f2f5;--surface:#fff;--border:#e2e8f0;--border-lt:#f1f5f9;
       --text:#1a2332;--text-2:#64748b;--text-3:#a0aec0;
-      --hdr-h:54px;--stats-h:110px;--sb-w:310px;
+      --hdr-h:54px;--sb-w:310px;
       --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
       --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
       --shadow-lg:0 20px 60px rgba(0,0,0,.2);
     }
     html,body{height:100%;font-family:'DM Sans',system-ui,sans-serif;font-size:14px;color:var(--text);background:var(--bg);overflow:hidden}
 
+    /* HEADER */
     .hdr{height:var(--hdr-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:relative;z-index:999}
     .hdr-left{display:flex;align-items:center;gap:10px}
     .hdr-logo{height:36px;width:auto;object-fit:contain}
@@ -47,18 +49,79 @@
     .menu-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;color:var(--text-2)}
     .menu-item:hover svg{color:var(--primary-lt)}
 
-    .stats-bar{height:var(--stats-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;overflow-x:auto;z-index:10}
-    .sc{flex:1;min-width:190px;padding:14px 20px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--border-lt);transition:background .15s}
-    .sc:last-child{border-right:none}
-    .sc:hover{background:var(--primary-bg)}
-    .sc-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:6px}
-    .sc-val{font-size:26px;font-weight:800;line-height:1;letter-spacing:-0.5px;margin-bottom:8px}
-    .sc-meta{display:flex;flex-direction:column;gap:4px}
+    /* STATS CARDS ROW */
+    .stats-row{
+      display:flex;gap:12px;padding:12px 16px;
+      overflow-x:auto;flex-shrink:0;
+      background:var(--bg);
+      align-items:stretch;
+    }
+    .stats-row::-webkit-scrollbar{height:3px}
+    .stats-row::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+    .sc{
+      flex:1;min-width:190px;max-width:280px;
+      background:var(--surface);
+      border-radius:14px;
+      padding:16px 18px;
+      display:flex;flex-direction:column;gap:0;
+      box-shadow:var(--shadow-sm);
+      border:1px solid var(--border);
+      position:relative;overflow:hidden;
+      transition:box-shadow .15s;
+      flex-shrink:0;
+    }
+    .sc:hover{box-shadow:var(--shadow-md)}
+    .sc-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+    .sc-lbl-icon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .sc-val{font-size:28px;font-weight:800;line-height:1;letter-spacing:-0.5px;margin-bottom:6px}
+    .sc-sub{font-size:12px;color:var(--text-2);margin-bottom:10px}
+    .sc-meta{display:flex;flex-direction:column;gap:4px;margin-top:auto}
     .sc-meta-item{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;color:var(--text-2);white-space:nowrap}
     .dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
-    .app-body{height:calc(100vh - var(--hdr-h) - var(--stats-h));display:flex;overflow:hidden}
+    /* Progress bar */
+    .prog-bar-wrap{margin:8px 0 10px;display:flex;flex-direction:column;gap:4px}
+    .prog-bar-top{display:flex;justify-content:space-between;align-items:center}
+    .prog-bar-pct{font-size:11px;font-weight:700;color:var(--primary-md)}
+    .prog-bar-track{height:6px;background:#e8f5e9;border-radius:3px;overflow:hidden}
+    .prog-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--primary-lt),var(--primary-md));transition:width .4s ease}
+    .prog-bar-lbl{font-size:10.5px;color:var(--text-2)}
 
+    /* Progres panel period switcher */
+    .prog-period-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+    .period-sel{
+      display:flex;align-items:center;gap:4px;
+      padding:4px 8px;border-radius:20px;
+      border:1px solid var(--border);background:#f8fafc;
+      font-size:11px;font-weight:600;color:var(--text-2);
+      cursor:pointer;transition:all .15s;
+      appearance:none;outline:none;
+    }
+    .period-sel:hover,.period-sel:focus{border-color:var(--primary-lt);background:var(--primary-bg);color:var(--primary-md)}
+    .btn-chart{
+      display:flex;align-items:center;gap:4px;
+      padding:4px 9px;border-radius:20px;
+      border:1px solid var(--border);background:#f8fafc;
+      font-size:11px;font-weight:600;color:var(--text-2);
+      cursor:pointer;transition:all .15s;
+      white-space:nowrap;
+    }
+    .btn-chart:hover{border-color:#3b82f6;background:#eff6ff;color:#2563eb}
+    .btn-chart svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .prog-trend{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;margin-top:2px}
+    .prog-trend.up{color:#16a34a}
+    .prog-trend.down{color:#dc2626}
+    .prog-trend svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5}
+
+    /* APP BODY */
+    .app-body{
+      flex:1;display:flex;overflow:hidden;
+      height:calc(100vh - var(--hdr-h));
+    }
+    .app-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+    /* SIDEBAR */
     .sb{width:var(--sb-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
     .sb-hd{padding:13px 15px;border-bottom:1px solid var(--border-lt)}
     .sb-hd-row{display:flex;align-items:center;justify-content:space-between}
@@ -106,6 +169,7 @@
     .leg-sq{width:12px;height:12px;border-radius:2px;flex-shrink:0;border:2px solid rgba(0,0,0,.2)}
     .leg-dash{width:18px;border-top:2px dashed #94a3b8;flex-shrink:0}
 
+    /* MAP */
     .map-wrap{flex:1;position:relative;overflow:hidden;min-width:0;min-height:0;z-index:1}
     #map{position:absolute;inset:0;width:100%;height:100%;z-index:1}
     .leaflet-control-scale-line{font-family:'DM Sans',sans-serif;font-size:11px}
@@ -121,11 +185,13 @@
     .bm-thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block}
     .bm-name{font-size:8px;font-weight:600;color:#374151;background:rgba(255,255,255,.88);padding:2px 5px;border-radius:4px;line-height:1.3;text-align:center;max-width:46px;backdrop-filter:blur(4px)}
 
+    /* LOADING */
     .loading-overlay{position:absolute;inset:0;z-index:998;background:rgba(255,255,255,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(3px)}
     .spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     .load-txt{font-size:13px;color:var(--text-2);font-weight:500}
 
+    /* POPUP */
     .leaflet-popup-content-wrapper{border-radius:11px!important;box-shadow:0 8px 30px rgba(0,0,0,.14)!important;padding:0!important;overflow:hidden;font-family:'DM Sans',sans-serif!important}
     .leaflet-popup-content{margin:0!important;min-width:220px}
     .leaflet-popup-tip-container{display:none}
@@ -137,6 +203,7 @@
     .pop-lbl{font-size:11px;color:var(--text-2);flex-shrink:0}
     .pop-val{font-size:12px;font-weight:600;color:var(--text);text-align:right;word-break:break-word}
 
+    /* KTH TABLE MODAL */
     .modal-overlay{position:fixed;inset:0;z-index:900;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
     .kth-modal{background:#fff;border-radius:14px;width:min(900px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
     .kth-modal-hd{padding:16px 20px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -178,11 +245,28 @@
     .row-print-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
     .no-results{text-align:center;padding:28px 16px;color:var(--text-3);font-size:13px}
 
+    /* CHART MODAL */
+    .chart-modal-overlay{position:fixed;inset:0;z-index:1100;background:rgba(15,23,42,.4);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+    .chart-modal{background:#fff;border-radius:16px;width:min(780px,95vw);max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
+    .chart-modal-hd{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .chart-modal-title{font-size:15px;font-weight:700;color:var(--text)}
+    .chart-modal-sub{font-size:12px;color:var(--text-2);margin-top:2px}
+    .chart-modal-close{width:30px;height:30px;border-radius:7px;background:#f1f5f9;border:none;color:var(--text-2);font-size:18px;cursor:pointer;display:grid;place-items:center;transition:background .15s}
+    .chart-modal-close:hover{background:#e2e8f0}
+    .chart-modal-body{padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+    .chart-period-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .chart-period-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:#f8fafc;font-size:11px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all .15s}
+    .chart-period-btn.active,.chart-period-btn:hover{background:var(--primary-bg);border-color:var(--primary-lt);color:var(--primary-md)}
+    .chart-wrap{position:relative;height:280px}
+    .chart-summary-row{display:flex;gap:10px;flex-wrap:wrap}
+    .chart-sum-box{flex:1;min-width:100px;padding:12px 14px;background:#f8fafc;border:1px solid var(--border);border-radius:10px}
+    .chart-sum-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px}
+    .chart-sum-val{font-size:18px;font-weight:800;color:var(--primary)}
+
     ::-webkit-scrollbar{width:4px;height:4px}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
     ::-webkit-scrollbar-track{background:transparent}
     .empty-state{text-align:center;padding:32px 16px;color:var(--text-3);font-size:13px}
-
     #printMapContainer{display:none;position:fixed;top:-9999px;left:-9999px}
   </style>
 </head>
@@ -221,32 +305,88 @@
   </div>
 </header>
 
-<div class="stats-bar">
+<!-- STATS CARDS -->
+<div class="stats-row" id="statsRow">
+
+  <!-- Panel 1: Total Realisasi Tanam -->
   <div class="sc">
-    <div class="sc-lbl">Total Lahan Garapan</div>
+    <div class="sc-lbl">
+      <svg class="sc-lbl-icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Total Realisasi Tanam
+    </div>
     <div class="sc-val" id="sTotalHa" style="color:var(--primary)">—</div>
+    <div class="sc-sub" id="sTotalSub">dari — ha terklaim</div>
+    <div class="prog-bar-wrap">
+      <div class="prog-bar-top">
+        <span class="prog-bar-lbl" id="sTotalPetakLabel">— petak terealisasi</span>
+        <span class="prog-bar-pct" id="sTotalPct">—%</span>
+      </div>
+      <div class="prog-bar-track"><div class="prog-bar-fill" id="sTotalBar" style="width:0%"></div></div>
+    </div>
     <div class="sc-meta">
-      <span class="sc-meta-item" id="sTotalMeta" style="color:var(--text-3)">Memuat...</span>
+      <span class="sc-meta-item" id="sTotalMeta" style="color:var(--text-3);font-size:11px">Memuat...</span>
     </div>
   </div>
+
+  <!-- Panel 2: Luasan Progres -->
   <div class="sc">
-    <div class="sc-lbl">Agroforestri</div>
+    <div class="sc-lbl">
+      <svg class="sc-lbl-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Luasan Progres
+    </div>
+    <div class="sc-val" id="sProgVal" style="color:#2563eb">—</div>
+    <div class="prog-period-row">
+      <select class="period-sel" id="periodSel" onchange="onPeriodChange(this.value)">
+        <option value="week">1 Minggu Terakhir</option>
+        <option value="month" selected>1 Bulan Terakhir</option>
+        <option value="quarter">3 Bulan Terakhir</option>
+        <option value="halfyear">6 Bulan Terakhir</option>
+        <option value="year">1 Tahun Terakhir</option>
+        <option value="all">Semua Waktu</option>
+      </select>
+      <button class="btn-chart" onclick="openChartModal()">
+        <svg viewBox="0 0 24 24"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
+        Lihat Grafik
+      </button>
+    </div>
+    <div class="prog-trend" id="sProgTrend"></div>
+    <div class="sc-meta" style="margin-top:8px">
+      <span class="sc-meta-item" id="sProgMeta" style="color:var(--text-2)">— petak baru terealisasi</span>
+    </div>
+  </div>
+
+  <!-- Panel 3: Agroforestri -->
+  <div class="sc">
+    <div class="sc-lbl">
+      <svg class="sc-lbl-icon" viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 008 20C19 20 22 3 22 3c-1 2-8 2-8 2 2-5 6-5 6-5-5 0-9 2.5-9.5 7.5C10 8.5 17 8 17 8z"/></svg>
+      Agroforestri
+    </div>
     <div class="sc-val" id="sAgroHa" style="color:var(--c-agro-reg)">—</div>
     <div class="sc-meta">
       <span class="sc-meta-item"><span class="dot" style="background:var(--c-agro-reg-lt)"></span><span id="sAgroReg">Agro Reguler: —</span></span>
       <span class="sc-meta-item"><span class="dot" style="background:var(--c-agro-bpo-lt)"></span><span id="sAgroBPO">Bantuan Pupuk Organik: —</span></span>
     </div>
   </div>
+
+  <!-- Panel 4: Tembawang -->
   <div class="sc">
-    <div class="sc-lbl">Tembawang</div>
+    <div class="sc-lbl">
+      <svg class="sc-lbl-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Tembawang
+    </div>
     <div class="sc-val" id="sTembHa" style="color:var(--c-temb-reg)">—</div>
     <div class="sc-meta">
       <span class="sc-meta-item"><span class="dot" style="background:var(--c-temb-reg-lt)"></span><span id="sTembReg">Temb Reguler: —</span></span>
       <span class="sc-meta-item"><span class="dot" style="background:var(--c-temb-mtl-lt)"></span><span id="sTembMTL">Menjaga Tutupan Lahan: —</span></span>
     </div>
   </div>
+
+  <!-- Panel 5: Anggota -->
   <div class="sc">
-    <div class="sc-lbl">Anggota Terdaftar</div>
+    <div class="sc-lbl">
+      <svg class="sc-lbl-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Anggota Terdaftar
+    </div>
     <div class="sc-val" id="sAnggota" style="color:#3b82f6">—</div>
     <div class="sc-meta">
       <span class="sc-meta-item" style="color:#3b82f6">
@@ -259,7 +399,9 @@
       </span>
     </div>
   </div>
+
 </div>
+<!-- END STATS -->
 
 <div class="app-body">
   <aside class="sb">
@@ -300,42 +442,44 @@
     </div>
   </aside>
 
-  <div class="map-wrap" id="mapWrap">
-    <div id="map"></div>
+  <div class="app-main">
+    <div class="map-wrap" id="mapWrap">
+      <div id="map"></div>
 
-    <div class="basemap-panel" id="basemapPanel">
-      <div class="basemap-label-row">BASEMAP</div>
-      <div class="basemap-pills">
-        <div class="bm-pill" id="bm_esri_imagery" onclick="switchBasemap('esri_imagery')" title="ESRI Satellite">
-          <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/5/16/26" alt="ESRI"></div>
-          <div class="bm-name">ESRI St</div>
-        </div>
-        <div class="bm-pill" id="bm_google_satellite" onclick="switchBasemap('google_satellite')" title="Google Satellite">
-          <div class="bm-thumb-wrap"><img src="https://mt1.google.com/vt/lyrs=s&x=26&y=16&z=5" alt="Google"></div>
-          <div class="bm-name">Google</div>
-        </div>
-        <div class="bm-pill" id="bm_esri_topo" onclick="switchBasemap('esri_topo')" title="ESRI Topo">
-          <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/5/16/26" alt="Topo"></div>
-          <div class="bm-name">Topo</div>
-        </div>
-        <div class="bm-pill" id="bm_osm" onclick="switchBasemap('osm')" title="OpenStreetMap">
-          <div class="bm-thumb-wrap"><img src="https://tile.openstreetmap.org/5/26/16.png" alt="OSM"></div>
-          <div class="bm-name">Streets</div>
-        </div>
-        <div class="bm-pill active" id="bm_carto_light" onclick="switchBasemap('carto_light')" title="Carto Light">
-          <div class="bm-thumb-wrap"><img src="https://basemaps.cartocdn.com/light_all/5/26/16.png" alt="Light"></div>
-          <div class="bm-name">Light</div>
-        </div>
-        <div class="bm-pill" id="bm_carto_dark" onclick="switchBasemap('carto_dark')" title="Dark">
-          <div class="bm-thumb-wrap" style="background:#1a1a2e"><img src="https://basemaps.cartocdn.com/dark_all/5/26/16.png" alt="Dark"></div>
-          <div class="bm-name">Dark</div>
+      <div class="basemap-panel" id="basemapPanel">
+        <div class="basemap-label-row">BASEMAP</div>
+        <div class="basemap-pills">
+          <div class="bm-pill" id="bm_esri_imagery" onclick="switchBasemap('esri_imagery')" title="ESRI Satellite">
+            <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/5/16/26" alt="ESRI"></div>
+            <div class="bm-name">ESRI St</div>
+          </div>
+          <div class="bm-pill" id="bm_google_satellite" onclick="switchBasemap('google_satellite')" title="Google Satellite">
+            <div class="bm-thumb-wrap"><img src="https://mt1.google.com/vt/lyrs=s&x=26&y=16&z=5" alt="Google"></div>
+            <div class="bm-name">Google</div>
+          </div>
+          <div class="bm-pill" id="bm_esri_topo" onclick="switchBasemap('esri_topo')" title="ESRI Topo">
+            <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/5/16/26" alt="Topo"></div>
+            <div class="bm-name">Topo</div>
+          </div>
+          <div class="bm-pill" id="bm_osm" onclick="switchBasemap('osm')" title="OpenStreetMap">
+            <div class="bm-thumb-wrap"><img src="https://tile.openstreetmap.org/5/26/16.png" alt="OSM"></div>
+            <div class="bm-name">Streets</div>
+          </div>
+          <div class="bm-pill active" id="bm_carto_light" onclick="switchBasemap('carto_light')" title="Carto Light">
+            <div class="bm-thumb-wrap"><img src="https://basemaps.cartocdn.com/light_all/5/26/16.png" alt="Light"></div>
+            <div class="bm-name">Light</div>
+          </div>
+          <div class="bm-pill" id="bm_carto_dark" onclick="switchBasemap('carto_dark')" title="Dark">
+            <div class="bm-thumb-wrap" style="background:#1a1a2e"><img src="https://basemaps.cartocdn.com/dark_all/5/26/16.png" alt="Dark"></div>
+            <div class="bm-name">Dark</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="spinner"></div>
-      <div class="load-txt" id="loadTxt">Menginisialisasi...</div>
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="load-txt" id="loadTxt">Menginisialisasi...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -377,7 +521,29 @@
   </div>
 </div>
 
-<!-- Hidden container untuk print map -->
+<!-- CHART MODAL -->
+<div class="chart-modal-overlay" id="chartModal" style="display:none" onclick="closeChartModal(event)">
+  <div class="chart-modal" onclick="event.stopPropagation()">
+    <div class="chart-modal-hd">
+      <div>
+        <div class="chart-modal-title">Grafik Realisasi Lahan per Bulan</div>
+        <div class="chart-modal-sub" id="chartModalSub">Luas lahan terealisasi berdasarkan tanggal realisasi</div>
+      </div>
+      <button class="chart-modal-close" onclick="closeChartModal()">✕</button>
+    </div>
+    <div class="chart-modal-body">
+      <div class="chart-period-row">
+        <button class="chart-period-btn" onclick="switchChartPeriod('6m',this)">6 Bulan</button>
+        <button class="chart-period-btn active" onclick="switchChartPeriod('12m',this)">12 Bulan</button>
+        <button class="chart-period-btn" onclick="switchChartPeriod('24m',this)">24 Bulan</button>
+        <button class="chart-period-btn" onclick="switchChartPeriod('all',this)">Semua</button>
+      </div>
+      <div class="chart-summary-row" id="chartSummaryRow"></div>
+      <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
 <div id="printMapContainer"></div>
 
 <script>
@@ -407,18 +573,18 @@ const BASEMAPS = {
 };
 let currentBasemap = 'carto_light';
 
-const map = L.map('map', { 
-  zoomControl:false, 
-  fadeAnimation:false, 
-  zoomAnimation:false, 
+const map = L.map('map', {
+  zoomControl:false,
+  fadeAnimation:false,
+  zoomAnimation:false,
   markerZoomAnimation:false,
-  preferCanvas: true 
+  preferCanvas: true
 });
 L.control.zoom({ position:'topright' }).addTo(map);
 L.control.scale({ position:'bottomright', metric:true, imperial:false }).addTo(map);
 map.setView([1.0, 111.5], 9);
 
-const resizeObserver = new ResizeObserver(() => { 
+const resizeObserver = new ResizeObserver(() => {
   map.invalidateSize({ animate:false, pan:false });
 });
 resizeObserver.observe(document.getElementById('mapWrap'));
@@ -426,30 +592,21 @@ resizeObserver.observe(document.getElementById('mapWrap'));
 requestAnimationFrame(() => {
   BASEMAPS.carto_light.addTo(map);
   map.getPane('tilePane').style.willChange = 'auto';
-  requestAnimationFrame(() => { 
+  requestAnimationFrame(() => {
     map.invalidateSize({ animate:false, pan:false });
-    const canvases = document.querySelectorAll('#map canvas');
-    canvases.forEach(c => {
-      if (c.style) c.style.willChange = 'auto';
-    });
+    document.querySelectorAll('#map canvas').forEach(c => { if (c.style) c.style.willChange = 'auto'; });
   });
 });
 
 window.addEventListener('load', () => {
-  requestAnimationFrame(() => { 
-    requestAnimationFrame(() => { 
-      map.invalidateSize({ animate:false, pan:false });
-    }); 
-  });
+  requestAnimationFrame(() => { requestAnimationFrame(() => { map.invalidateSize({ animate:false, pan:false }); }); });
 });
 
 let glitchFixTimer;
 document.getElementById('map').addEventListener('mousemove', () => {
   clearTimeout(glitchFixTimer);
   glitchFixTimer = setTimeout(() => {
-    if (map._renderer && map._renderer._update) {
-      map._renderer._update();
-    }
+    if (map._renderer && map._renderer._update) map._renderer._update();
   }, 300);
 });
 
@@ -464,13 +621,11 @@ function switchBasemap(key) {
   document.getElementById('bm_' + key).classList.add('active');
 }
 
-function toggleMenu() { 
+function toggleMenu() {
   const dd = document.getElementById('menuDropdown');
   dd.classList.toggle('open');
   if (dd.classList.contains('open')) {
-    setTimeout(() => {
-      document.addEventListener('click', closeMenuOnClickOutside);
-    }, 10);
+    setTimeout(() => { document.addEventListener('click', closeMenuOnClickOutside); }, 10);
   } else {
     document.removeEventListener('click', closeMenuOnClickOutside);
   }
@@ -497,7 +652,41 @@ let kthMap     = {};
 let kthBounds  = {};
 let currentKTH = null;
 let featureMap = {};
+let currentPeriod = 'month';
+let chartInstance = null;
+let currentChartPeriod = '12m';
 
+// ── date helpers ──────────────────────────────────────────
+function parseTgl(tglStr) {
+  if (!tglStr) return null;
+  const s = tglStr.trim();
+  // Try DD/MM/YYYY or DD-MM-YYYY
+  const m1 = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m1) return new Date(+m1[3], +m1[2] - 1, +m1[1]);
+  // Try YYYY-MM-DD
+  const m2 = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if (m2) return new Date(+m2[1], +m2[2] - 1, +m2[3]);
+  // Try natural: "15 January 2024" or "15 Jan 2024"
+  const d = new Date(s);
+  if (!isNaN(d)) return d;
+  return null;
+}
+
+function periodCutoff(period) {
+  const now = new Date();
+  if (period === 'week')     { const d = new Date(now); d.setDate(d.getDate() - 7);   return d; }
+  if (period === 'month')    { const d = new Date(now); d.setMonth(d.getMonth() - 1); return d; }
+  if (period === 'quarter')  { const d = new Date(now); d.setMonth(d.getMonth() - 3); return d; }
+  if (period === 'halfyear') { const d = new Date(now); d.setMonth(d.getMonth() - 6); return d; }
+  if (period === 'year')     { const d = new Date(now); d.setFullYear(d.getFullYear() - 1); return d; }
+  return null; // 'all'
+}
+
+function periodLabel(period) {
+  return { week:'1 Minggu Terakhir', month:'1 Bulan Terakhir', quarter:'3 Bulan Terakhir', halfyear:'6 Bulan Terakhir', year:'1 Tahun Terakhir', all:'Semua Waktu' }[period] || period;
+}
+
+// ── boot ─────────────────────────────────────────────────
 (async function boot() {
   try {
     setLoad('Memuat data spreadsheet...');
@@ -507,10 +696,11 @@ let featureMap = {};
     setLoad('Memuat data GeoJSON...');
     const [agroJSON, cmiJSON] = await Promise.all([getJSON(AGRO_URL), getJSON(CMI_URL)]);
 
-    setLoad('Memroses & merender peta...');
+    setLoad('Memproses & merender peta...');
     renderCMI(cmiJSON);
     renderAgro(agroJSON);
     calcStats();
+    calcProgres(currentPeriod);
     renderKTHList();
     fitAll();
     hideLoad();
@@ -561,7 +751,9 @@ function parseSheet(csvText) {
     if (!prog) return;
 
     const luasFinal = luas > 0 ? luas : (aReg || aBPO || tReg || tMTL || 0);
-    sheetMap[id] = { id, kth, luas: luasFinal, tipe, petani, jk, desa, tgl, aReg, aBPO, tReg, tMTL, prog };
+    const tglDate   = parseTgl(tgl);
+
+    sheetMap[id] = { id, kth, luas: luasFinal, tipe, petani, jk, desa, tgl, tglDate, aReg, aBPO, tReg, tMTL, prog };
   });
 
   console.log(`[sheet] ${Object.keys(sheetMap).length} baris valid dimuat`);
@@ -660,15 +852,25 @@ function zoomToLahan(id) {
   setTimeout(() => { try { entry.layer.openPopup(); } catch(e) {} }, 400);
 }
 
+// ── Stats Panel 1: Total Realisasi vs Terklaim ────────────
 function calcStats() {
-  let totalHa = 0, aReg = 0, aBPO = 0, tReg = 0, tMTL = 0;
+  let claimedHa = 0, realHa = 0, claimedPetak = 0, realPetak = 0;
+  let aReg = 0, aBPO = 0, tReg = 0, tMTL = 0;
   const uniq = new Set(), laki = new Set(), pmp = new Set();
 
   Object.values(sheetMap).forEach(r => {
     if (!matched.has(r.id)) return;
 
     const luasEfektif = r.luas > 0 ? r.luas : (r.aReg + r.aBPO + r.tReg + r.tMTL);
-    totalHa += luasEfektif;
+    const hasDate = !!r.tglDate;
+
+    claimedHa    += luasEfektif;
+    claimedPetak += 1;
+
+    if (hasDate) {
+      realHa    += luasEfektif;
+      realPetak += 1;
+    }
 
     if (r.aReg > 0 || r.aBPO > 0 || r.tReg > 0 || r.tMTL > 0) {
       aReg += r.aReg; aBPO += r.aBPO; tReg += r.tReg; tMTL += r.tMTL;
@@ -687,19 +889,237 @@ function calcStats() {
     }
   });
 
-  setText('sTotalHa',   fmt(totalHa) + ' ha');
-  setText('sTotalMeta', matched.size + ' petak lahan');
-  setText('sAgroHa',    fmt(aReg + aBPO) + ' ha');
-  setText('sAgroReg',   'Agro Reguler: '         + fmt(aReg) + ' ha');
-  setText('sAgroBPO',   'Bantuan Pupuk Organik: ' + fmt(aBPO) + ' ha');
-  setText('sTembHa',    fmt(tReg + tMTL) + ' ha');
-  setText('sTembReg',   'Temb. Reguler: '         + fmt(tReg) + ' ha');
-  setText('sTembMTL',   'Temb. MTL: '             + fmt(tMTL) + ' ha');
-  setText('sAnggota',   uniq.size);
-  setText('sLaki',      'Laki-laki: '  + laki.size);
-  setText('sPmp',       'Perempuan: '  + pmp.size);
+  // Panel 1
+  const pct = claimedHa > 0 ? Math.round((realHa / claimedHa) * 100) : 0;
+  setText('sTotalHa',         fmt(realHa) + ' ha');
+  setText('sTotalSub',        'dari ' + fmt(claimedHa) + ' ha terklaim');
+  setText('sTotalPetakLabel', realPetak + ' dari ' + claimedPetak + ' petak terealisasi');
+  setText('sTotalPct',        pct + '%');
+  const bar = document.getElementById('sTotalBar');
+  if (bar) bar.style.width = pct + '%';
+  setText('sTotalMeta',       matched.size + ' petak lahan terpetakan');
+
+  // Panel 3–4
+  setText('sAgroHa',  fmt(aReg + aBPO) + ' ha');
+  setText('sAgroReg', 'Agro Reguler: '         + fmt(aReg) + ' ha');
+  setText('sAgroBPO', 'Bantuan Pupuk Organik: ' + fmt(aBPO) + ' ha');
+  setText('sTembHa',  fmt(tReg + tMTL) + ' ha');
+  setText('sTembReg', 'Temb. Reguler: '         + fmt(tReg) + ' ha');
+  setText('sTembMTL', 'Temb. MTL: '             + fmt(tMTL) + ' ha');
+
+  // Panel 5
+  setText('sAnggota', uniq.size);
+  setText('sLaki',    'Laki-laki: '  + laki.size);
+  setText('sPmp',     'Perempuan: '  + pmp.size);
 }
 
+// ── Stats Panel 2: Luasan Progres ────────────────────────
+function calcProgres(period) {
+  currentPeriod = period;
+  const cutoff = periodCutoff(period);
+  const prevCutoff = prevPeriodCutoff(period);
+
+  let curHa = 0, curPetak = 0;
+  let prevHa = 0;
+
+  Object.values(sheetMap).forEach(r => {
+    if (!matched.has(r.id)) return;
+    if (!r.tglDate) return;
+
+    const luasEfektif = r.luas > 0 ? r.luas : (r.aReg + r.aBPO + r.tReg + r.tMTL);
+
+    // current period
+    if (!cutoff || r.tglDate >= cutoff) {
+      curHa    += luasEfektif;
+      curPetak += 1;
+    }
+
+    // previous period (for trend)
+    if (prevCutoff) {
+      const inPrev = (!cutoff || r.tglDate < cutoff) && r.tglDate >= prevCutoff;
+      if (inPrev) prevHa += luasEfektif;
+    }
+  });
+
+  setText('sProgVal',  fmt(curHa) + ' ha');
+  setText('sProgMeta', curPetak + ' petak baru terealisasi');
+
+  // Trend indicator
+  const trendEl = document.getElementById('sProgTrend');
+  if (prevHa > 0 && period !== 'all') {
+    const diff = curHa - prevHa;
+    const pct  = Math.abs(Math.round((diff / prevHa) * 100));
+    const up   = diff >= 0;
+    trendEl.className = 'prog-trend ' + (up ? 'up' : 'down');
+    trendEl.innerHTML = `
+      <svg viewBox="0 0 24 24"><polyline points="${up ? '23 6 13.5 15.5 8.5 10.5 1 18' : '23 18 13.5 8.5 8.5 13.5 1 6'}"/></svg>
+      ${up ? '+' : '-'}${pct}% dari periode sebelumnya
+    `;
+  } else {
+    trendEl.className = 'prog-trend';
+    trendEl.innerHTML = '';
+  }
+}
+
+function prevPeriodCutoff(period) {
+  const now = new Date();
+  if (period === 'week')     { const d = new Date(now); d.setDate(d.getDate() - 14);    return d; }
+  if (period === 'month')    { const d = new Date(now); d.setMonth(d.getMonth() - 2);   return d; }
+  if (period === 'quarter')  { const d = new Date(now); d.setMonth(d.getMonth() - 6);   return d; }
+  if (period === 'halfyear') { const d = new Date(now); d.setMonth(d.getMonth() - 12);  return d; }
+  if (period === 'year')     { const d = new Date(now); d.setFullYear(d.getFullYear()-2); return d; }
+  return null;
+}
+
+function onPeriodChange(val) {
+  calcProgres(val);
+}
+
+// ── Chart Modal ───────────────────────────────────────────
+function buildMonthlyData(numMonths) {
+  const now   = new Date();
+  const months = [];
+  const labels = [];
+  const haData = [];
+  const petakData = [];
+
+  for (let i = numMonths - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ year: d.getFullYear(), month: d.getMonth() });
+    labels.push(d.toLocaleDateString('id-ID', { month:'short', year:'2-digit' }));
+    haData.push(0);
+    petakData.push(0);
+  }
+
+  Object.values(sheetMap).forEach(r => {
+    if (!matched.has(r.id) || !r.tglDate) return;
+    const luasEfektif = r.luas > 0 ? r.luas : (r.aReg + r.aBPO + r.tReg + r.tMTL);
+    const ry = r.tglDate.getFullYear();
+    const rm = r.tglDate.getMonth();
+    const idx = months.findIndex(m => m.year === ry && m.month === rm);
+    if (idx >= 0) {
+      haData[idx]    += luasEfektif;
+      petakData[idx] += 1;
+    }
+  });
+
+  return { labels, haData, petakData };
+}
+
+function switchChartPeriod(period, btn) {
+  currentChartPeriod = period;
+  document.querySelectorAll('.chart-period-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderChart(period);
+}
+
+function renderChart(period) {
+  const numMonths = period === '6m' ? 6 : period === '12m' ? 12 : period === '24m' ? 24 : getMaxMonths();
+  const { labels, haData, petakData } = buildMonthlyData(numMonths);
+
+  const totalHa    = haData.reduce((a,b) => a+b, 0);
+  const totalPetak = petakData.reduce((a,b) => a+b, 0);
+  const maxHa      = Math.max(...haData);
+  const peakMonth  = labels[haData.indexOf(maxHa)] || '—';
+
+  document.getElementById('chartSummaryRow').innerHTML = `
+    <div class="chart-sum-box"><div class="chart-sum-lbl">Total Terealisasi</div><div class="chart-sum-val">${fmt(totalHa)} ha</div></div>
+    <div class="chart-sum-box"><div class="chart-sum-lbl">Total Petak</div><div class="chart-sum-val">${totalPetak}</div></div>
+    <div class="chart-sum-box"><div class="chart-sum-lbl">Realisasi Tertinggi</div><div class="chart-sum-val">${fmt(maxHa)} ha</div></div>
+    <div class="chart-sum-box"><div class="chart-sum-lbl">Bulan Tertinggi</div><div class="chart-sum-val" style="font-size:14px">${peakMonth}</div></div>
+  `;
+
+  const ctx = document.getElementById('monthlyChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Luas Terealisasi (ha)',
+          data: haData,
+          backgroundColor: 'rgba(82,183,136,0.75)',
+          borderColor: '#1b5e40',
+          borderWidth: 1.5,
+          borderRadius: 5,
+          yAxisID: 'yHa',
+          order: 2,
+        },
+        {
+          label: 'Jumlah Petak',
+          data: petakData,
+          type: 'line',
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.12)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.35,
+          fill: true,
+          yAxisID: 'yPetak',
+          order: 1,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { position:'top', labels: { font:{ family:'DM Sans', size:11 }, boxWidth:12, padding:14 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.dataset.yAxisID === 'yHa') return ` ${fmt(ctx.parsed.y)} ha`;
+              return ` ${ctx.parsed.y} petak`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid:{ display:false }, ticks:{ font:{ family:'DM Sans', size:10 } } },
+        yHa: {
+          position:'left',
+          title:{ display:true, text:'Luas (ha)', font:{ family:'DM Sans', size:10 } },
+          ticks:{ font:{ family:'DM Sans', size:10 }, callback: v => fmt(v) },
+          grid:{ color:'rgba(0,0,0,.06)' }
+        },
+        yPetak: {
+          position:'right',
+          title:{ display:true, text:'Jumlah Petak', font:{ family:'DM Sans', size:10 } },
+          ticks:{ font:{ family:'DM Sans', size:10 }, stepSize:1 },
+          grid:{ display:false }
+        }
+      }
+    }
+  });
+}
+
+function getMaxMonths() {
+  let minDate = null;
+  Object.values(sheetMap).forEach(r => {
+    if (r.tglDate && (!minDate || r.tglDate < minDate)) minDate = r.tglDate;
+  });
+  if (!minDate) return 12;
+  const now = new Date();
+  const months = (now.getFullYear() - minDate.getFullYear()) * 12 + (now.getMonth() - minDate.getMonth()) + 1;
+  return Math.max(months, 6);
+}
+
+function openChartModal() {
+  document.getElementById('chartModal').style.display = 'flex';
+  // render after display so canvas has size
+  setTimeout(() => renderChart(currentChartPeriod), 50);
+}
+
+function closeChartModal(e) {
+  if (e && e.target !== document.getElementById('chartModal')) return;
+  document.getElementById('chartModal').style.display = 'none';
+}
+
+// ── KTH List ─────────────────────────────────────────────
 function renderKTHList() {
   const list = Object.values(kthMap).sort((a, b) => (b.agro + b.temb) - (a.agro + a.temb));
   setText('kthCount', list.length);
@@ -805,7 +1225,7 @@ function openKTH(name) {
   document.getElementById('noResults').style.display = 'none';
   setText('modalRowCount', k.rows.length + ' lahan');
 
-  const eyeIcon = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const eyeIcon   = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
   const printIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`;
 
   document.getElementById('modalTbody').innerHTML = k.rows.map((r, i) => {
@@ -877,44 +1297,28 @@ function printSingleLahan(id) {
 
   const mapDiv = document.createElement('div');
   mapDiv.id = 'singlePrintMap';
-  mapDiv.style.width = '800px';
-  mapDiv.style.height = '500px';
-  mapDiv.style.position = 'fixed';
-  mapDiv.style.top = '-9999px';
-  mapDiv.style.left = '-9999px';
+  mapDiv.style.cssText = 'width:800px;height:500px;position:fixed;top:-9999px;left:-9999px';
   container.appendChild(mapDiv);
 
   const printMap = L.map('singlePrintMap', {
-    zoomControl: false,
-    attributionControl: false,
-    dragging: false,
-    touchZoom: false,
-    scrollWheelZoom: false,
-    doubleClickZoom: false
+    zoomControl:false, attributionControl:false,
+    dragging:false, touchZoom:false, scrollWheelZoom:false, doubleClickZoom:false
   });
 
   BASEMAPS.carto_light.addTo(printMap);
 
   const st = PROG[entry.row.prog];
   const geoLayer = L.geoJSON(entry.feature, {
-    style: () => ({ color: st.stroke, weight: 2, fillColor: st.fill, fillOpacity: 0.75, opacity: 1 })
+    style: () => ({ color:st.stroke, weight:2, fillColor:st.fill, fillOpacity:0.75, opacity:1 })
   }).addTo(printMap);
 
   setTimeout(() => {
-    const bounds = geoLayer.getBounds();
-    printMap.fitBounds(bounds.pad(0.1));
-
+    printMap.fitBounds(geoLayer.getBounds().pad(0.1));
     setTimeout(() => {
       try {
         const canvas = document.querySelector('#singlePrintMap canvas');
-        if (canvas) {
-          const mapImage = canvas.toDataURL('image/png');
-          generateSingleLahanPDF(entry.row, mapImage);
-        }
-      } catch (e) {
-        console.error('Error generating map image:', e);
-      }
-
+        if (canvas) generateSingleLahanPDF(entry.row, canvas.toDataURL('image/png'));
+      } catch(e) { console.error(e); }
       printMap.remove();
       mapDiv.remove();
     }, 1200);
@@ -926,112 +1330,60 @@ function generateSingleLahanPDF(row, mapImage) {
   const dateStr = now.toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' });
   const st = PROG[row.prog];
 
-  const htmlContent = `
-    <html>
-      <head>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: Arial, sans-serif; color: #1a2332; }
-          .page { width: 210mm; height: 297mm; padding: 20px; display: flex; flex-direction: column; }
-          .header { background: linear-gradient(135deg, #1b5e40 0%, #2d7a55 100%); color: white; padding: 20px; text-align: center; border-radius: 6px; margin-bottom: 20px; }
-          .header h1 { font-size: 20px; margin-bottom: 5px; }
-          .header p { font-size: 12px; opacity: 0.9; }
-          .map-container { width: 100%; height: 220px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
-          .map-container img { width: 100%; height: 100%; object-fit: cover; }
-          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-          .info-box { padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
-          .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
-          .info-value { font-size: 14px; font-weight: 700; color: #1b5e40; }
-          .details { padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 20px; }
-          .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
-          .detail-row:last-child { border-bottom: none; }
-          .detail-label { font-size: 11px; color: #64748b; font-weight: 600; }
-          .detail-value { font-size: 11px; color: #1a2332; font-weight: 700; }
-          .footer { font-size: 9px; color: #64748b; text-align: center; margin-top: auto; padding-top: 10px; border-top: 1px solid #e2e8f0; }
-          .tag { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
-          .tag.ar { background: #dcfce7; color: #166534; }
-          .tag.ab { background: #dbeafe; color: #1e40af; }
-          .tag.tr { background: #ffedd5; color: #9a3412; }
-          .tag.tm { background: #f3e8ff; color: #6b21a8; }
-        </style>
-      </head>
-      <body>
-        <div class="page">
-          <div class="header">
-            <h1>Laporan Peta Lahan Agroforestri</h1>
-            <p>${row.kth}</p>
-          </div>
-
-          <div class="map-container">
-            ${mapImage ? `<img src="${mapImage}" alt="Peta Lahan">` : '<div style="width:100%;height:100%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;color:#64748b">Peta tidak tersedia</div>'}
-          </div>
-
-          <div class="info-grid">
-            <div class="info-box">
-              <div class="info-label">Luas Lahan</div>
-              <div class="info-value">${fmt(row.luas)} ha</div>
-            </div>
-            <div class="info-box">
-              <div class="info-label">Program</div>
-              <div class="tag ${st?.tagCls||''}">${esc(st?.label||row.prog)}</div>
-            </div>
-          </div>
-
-          <div class="details">
-            <div class="detail-row">
-              <span class="detail-label">ID Lahan:</span>
-              <span class="detail-value">${esc(row.id)}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Nama Petani:</span>
-              <span class="detail-value">${esc(row.petani)}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Jenis Kelamin:</span>
-              <span class="detail-value">${esc(row.jk)}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Desa:</span>
-              <span class="detail-value">${esc(row.desa)}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Tipe:</span>
-              <span class="detail-value">${esc(row.tipe || '—')}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Tgl Realisasi:</span>
-              <span class="detail-value">${esc(row.tgl || '—')}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Tanggal Cetak:</span>
-              <span class="detail-value">${dateStr}</span>
-            </div>
-          </div>
-
-          <div class="footer">
-            <p>Dokumen ini dibuat secara otomatis oleh Sistem Sebaran Lahan Garapan Masyarakat - PT. Citra Mulia Inti</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+  const htmlContent = `<html><head><style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Arial,sans-serif;color:#1a2332}
+    .page{width:210mm;height:297mm;padding:20px;display:flex;flex-direction:column}
+    .header{background:linear-gradient(135deg,#1b5e40 0%,#2d7a55 100%);color:white;padding:20px;text-align:center;border-radius:6px;margin-bottom:20px}
+    .header h1{font-size:20px;margin-bottom:5px}
+    .header p{font-size:12px;opacity:.9}
+    .map-container{width:100%;height:220px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;margin-bottom:20px}
+    .map-container img{width:100%;height:100%;object-fit:cover}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px}
+    .info-box{padding:15px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px}
+    .info-label{font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:8px}
+    .info-value{font-size:14px;font-weight:700;color:#1b5e40}
+    .details{padding:15px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:20px}
+    .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0}
+    .detail-row:last-child{border-bottom:none}
+    .detail-label{font-size:11px;color:#64748b;font-weight:600}
+    .detail-value{font-size:11px;color:#1a2332;font-weight:700}
+    .footer{font-size:9px;color:#64748b;text-align:center;margin-top:auto;padding-top:10px;border-top:1px solid #e2e8f0}
+    .tag{display:inline-block;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:700}
+    .tag.ar{background:#dcfce7;color:#166534}.tag.ab{background:#dbeafe;color:#1e40af}
+    .tag.tr{background:#ffedd5;color:#9a3412}.tag.tm{background:#f3e8ff;color:#6b21a8}
+  </style></head><body><div class="page">
+    <div class="header"><h1>Laporan Peta Lahan Agroforestri</h1><p>${row.kth}</p></div>
+    <div class="map-container">${mapImage ? `<img src="${mapImage}">` : '<div style="width:100%;height:100%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;color:#64748b">Peta tidak tersedia</div>'}</div>
+    <div class="info-grid">
+      <div class="info-box"><div class="info-label">Luas Lahan</div><div class="info-value">${fmt(row.luas)} ha</div></div>
+      <div class="info-box"><div class="info-label">Program</div><div class="tag ${st?.tagCls||''}">${esc(st?.label||row.prog)}</div></div>
+    </div>
+    <div class="details">
+      <div class="detail-row"><span class="detail-label">ID Lahan:</span><span class="detail-value">${esc(row.id)}</span></div>
+      <div class="detail-row"><span class="detail-label">Nama Petani:</span><span class="detail-value">${esc(row.petani)}</span></div>
+      <div class="detail-row"><span class="detail-label">Jenis Kelamin:</span><span class="detail-value">${esc(row.jk)}</span></div>
+      <div class="detail-row"><span class="detail-label">Desa:</span><span class="detail-value">${esc(row.desa)}</span></div>
+      <div class="detail-row"><span class="detail-label">Tipe:</span><span class="detail-value">${esc(row.tipe||'—')}</span></div>
+      <div class="detail-row"><span class="detail-label">Tgl Realisasi:</span><span class="detail-value">${esc(row.tgl||'—')}</span></div>
+      <div class="detail-row"><span class="detail-label">Tanggal Cetak:</span><span class="detail-value">${dateStr}</span></div>
+    </div>
+    <div class="footer"><p>Dokumen ini dibuat secara otomatis oleh Sistem Sebaran Lahan Garapan Masyarakat - PT. Citra Mulia Inti</p></div>
+  </div></body></html>`;
 
   const element = document.createElement('div');
   element.innerHTML = htmlContent;
   document.body.appendChild(element);
 
-  const opt = {
-    margin: 0,
-    filename: `Lahan_${row.id}_${now.getTime()}.pdf`,
-    image: { type: 'png', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  html2pdf().set(opt).from(element).save().then(() => {
+  html2pdf().set({
+    margin:0, filename:`Lahan_${row.id}_${now.getTime()}.pdf`,
+    image:{ type:'png', quality:0.98 },
+    html2canvas:{ scale:2, useCORS:true, logging:false },
+    jsPDF:{ unit:'mm', format:'a4', orientation:'portrait' }
+  }).from(element).save().then(() => {
     document.body.removeChild(element);
   }).catch(err => {
-    console.error('PDF generation error:', err);
+    console.error(err);
     document.body.removeChild(element);
   });
 }
