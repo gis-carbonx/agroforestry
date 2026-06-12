@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -20,14 +19,14 @@
       --c-temb-mtl:#7b1fa2;--c-temb-mtl-lt:#ce6be8;
       --bg:#eef1f6;--surface:#fff;--border:#e2e8f0;--border-lt:#f1f5f9;
       --text:#1a2332;--text-2:#64748b;--text-3:#a0aec0;
-      --hdr-h:54px;--stats-h:162px;--sb-w:300px;
+      --hdr-h:54px;--filter-h:48px;--stats-h:162px;--sb-w:300px;
       --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
       --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
       --shadow-lg:0 20px 60px rgba(0,0,0,.2);
     }
     html,body{height:100%;font-family:'DM Sans',system-ui,sans-serif;font-size:15px;color:var(--text);background:var(--bg);overflow:hidden}
 
-    /* ── HEADER ── */
+    /* HEADER */
     .hdr{height:var(--hdr-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:relative;z-index:999;flex-shrink:0}
     .hdr-left{display:flex;align-items:center;gap:10px}
     .hdr-logo{height:36px;width:auto;object-fit:contain}
@@ -35,19 +34,32 @@
     .hdr-logo-fallback svg{width:20px;height:20px;fill:#fff}
     .hdr-title{font-size:16px;font-weight:700;line-height:1.2}
     .hdr-sub{font-size:13px;color:var(--text-2)}
-    .hdr-right{display:flex;align-items:center;gap:8px}
     .menu-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;color:var(--text-2);transition:all .15s;position:relative;z-index:1000}
     .menu-btn:hover{background:var(--primary-bg);border-color:var(--primary-lt);color:var(--primary-md)}
     .menu-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
-    .menu-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);min-width:220px;overflow:hidden;z-index:1001;display:none;max-height:calc(100vh - 100px);overflow-y:auto}
+    .menu-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);min-width:220px;z-index:1001;display:none}
     .menu-dropdown.open{display:block}
     .menu-hd{padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);border-bottom:1px solid var(--border-lt)}
     .menu-item{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;transition:background .12s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
     .menu-item:hover{background:var(--primary-bg);color:var(--primary-md)}
     .menu-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;color:var(--text-2)}
-    .menu-item:hover svg{color:var(--primary-lt)}
 
-    /* ── STATS BAR ── */
+    /* FILTER BAR */
+    .filter-bar{height:var(--filter-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 16px;flex-shrink:0;z-index:10}
+    .filter-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);white-space:nowrap}
+    .filter-presets{display:flex;gap:4px}
+    .fpreset{padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:var(--bg);font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all .12s;white-space:nowrap;font-family:inherit}
+    .fpreset.active{background:var(--primary);border-color:var(--primary);color:#fff}
+    .fpreset:hover:not(.active){background:var(--primary-bg);border-color:var(--primary-lt);color:var(--primary-md)}
+    .filter-sep{width:1px;height:24px;background:var(--border);flex-shrink:0}
+    .filter-custom{display:flex;align-items:center;gap:6px}
+    .filter-custom label{font-size:12px;color:var(--text-2);white-space:nowrap}
+    .filter-custom input[type=date]{padding:4px 8px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-family:inherit;color:var(--text);background:#f8fafc;outline:none;cursor:pointer}
+    .filter-custom input[type=date]:focus{border-color:var(--primary-lt);background:#fff}
+    .filter-info{margin-left:auto;font-size:12px;color:var(--text-2);background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 10px;white-space:nowrap}
+    .filter-info span{font-weight:700;color:var(--primary-md)}
+
+    /* STATS BAR */
     .stats-bar{height:var(--stats-h);background:var(--bg);display:flex;align-items:stretch;gap:8px;padding:8px 12px;overflow-x:auto;z-index:10;flex-shrink:0}
     .sc{flex:1;min-width:195px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:6px;box-shadow:var(--shadow-sm);transition:box-shadow .15s,border-color .15s;overflow:hidden}
     .sc:hover{box-shadow:var(--shadow-md);border-color:var(--primary-lt)}
@@ -61,14 +73,10 @@
     .sc-target{font-size:11px;color:var(--text-3);margin-top:1px}
     .sc-pct-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10.5px;font-weight:700;background:var(--primary-bg);color:var(--primary-md)}
 
-    ::-webkit-scrollbar{width:4px;height:4px}
-    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-    ::-webkit-scrollbar-track{background:transparent}
+    /* APP BODY */
+    .app-body{height:calc(100vh - var(--hdr-h) - var(--filter-h) - var(--stats-h));display:flex;overflow:hidden;gap:8px;padding:0 12px 10px 12px}
 
-    /* ── APP BODY ── */
-    .app-body{height:calc(100vh - var(--hdr-h) - var(--stats-h));display:flex;overflow:hidden;gap:8px;padding:0 12px 10px 12px}
-
-    /* ── SIDEBAR ── */
+    /* SIDEBAR */
     .sb{width:var(--sb-w);flex-shrink:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
     .sb-header-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow-sm);flex-shrink:0}
     .sb-hd-row{display:flex;align-items:center;justify-content:space-between}
@@ -90,7 +98,6 @@
     .kth-actions{display:flex;gap:3px;flex-shrink:0}
     .kth-btn{width:26px;height:26px;border-radius:7px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:grid;place-items:center;transition:all .15s;color:var(--text-2)}
     .kth-btn:hover{background:var(--primary-bg);border-color:var(--primary-lt);color:var(--primary-md)}
-    .kth-btn.eye:hover{background:#eff6ff;border-color:#93c5fd;color:#2563eb}
     .kth-btn.vis-on{background:var(--primary-bg);border-color:var(--primary-lt);color:var(--primary-md)}
     .kth-btn.vis-off{background:#fef2f2;border-color:#fca5a5;color:#dc2626}
     .kth-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -117,7 +124,7 @@
     .leg-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0;border:2px solid rgba(0,0,0,.2)}
     .leg-dash{width:16px;border-top:2px dashed #94a3b8;flex-shrink:0}
 
-    /* ── MAP PANEL ── */
+    /* MAP */
     .map-panel{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-sm);overflow:hidden;position:relative;min-width:0;min-height:0}
     .map-wrap{position:absolute;inset:0;border-radius:14px;overflow:hidden}
     #map{width:100%;height:100%;z-index:1}
@@ -126,20 +133,20 @@
     .basemap-panel{position:absolute;bottom:10px;left:12px;z-index:900;pointer-events:auto;background:rgba(255,255,255,0.97);padding:9px 10px;border-radius:11px;box-shadow:var(--shadow-md);border:1px solid var(--border)}
     .basemap-label-row{font-size:8px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
     .basemap-pills{display:flex;gap:5px;flex-wrap:wrap}
-    .bm-pill{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:transform .15s}
+    .bm-pill{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
     .bm-pill:hover .bm-thumb-wrap{box-shadow:0 0 0 2px #2d6a2d}
     .bm-pill.active .bm-thumb-wrap{box-shadow:0 0 0 2.5px #2d6a2d;opacity:1}
     .bm-thumb-wrap{width:40px;height:32px;border-radius:7px;overflow:hidden;border:1.5px solid rgba(255,255,255,.7);box-shadow:0 1px 4px rgba(0,0,0,.22);opacity:.82;transition:all .15s}
     .bm-thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block}
     .bm-name{font-size:8px;font-weight:600;color:#374151;background:rgba(255,255,255,.88);padding:1px 4px;border-radius:4px;line-height:1.3;text-align:center;max-width:42px}
 
-    /* ── LOADING ── */
+    /* LOADING */
     .loading-overlay{position:absolute;inset:0;z-index:998;background:rgba(255,255,255,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(3px);border-radius:14px}
     .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     .load-txt{font-size:14px;color:var(--text-2);font-weight:500}
 
-    /* ── POPUP ── */
+    /* POPUP */
     .leaflet-popup-content-wrapper{border-radius:11px!important;box-shadow:0 8px 30px rgba(0,0,0,.14)!important;padding:0!important;overflow:hidden;font-family:'DM Sans',sans-serif!important}
     .leaflet-popup-content{margin:0!important;min-width:220px}
     .leaflet-popup-tip-container{display:none}
@@ -151,28 +158,27 @@
     .pop-lbl{font-size:12px;color:var(--text-2);flex-shrink:0}
     .pop-val{font-size:13px;font-weight:600;color:var(--text);text-align:right;word-break:break-word}
 
-    /* ── KTH TABLE MODAL ── */
+    /* MODAL */
     .modal-overlay{position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
     .kth-modal{background:#fff;border-radius:14px;width:min(860px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
     .kth-modal-hd{padding:16px 20px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
     .kth-modal-title{font-size:16px;font-weight:700}
     .kth-modal-sub{font-size:13px;opacity:.8;margin-top:1px}
-    .kth-modal-close{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:background .15s}
+    .kth-modal-close{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;cursor:pointer;display:grid;place-items:center;flex-shrink:0}
     .kth-modal-close:hover{background:rgba(255,255,255,.25)}
     .kth-modal-stats{display:flex;gap:10px;padding:14px 20px;background:#f8fafc;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
     .kth-stat-box{flex:1;min-width:110px;padding:10px 13px;background:#fff;border:1px solid var(--border);border-radius:9px}
     .kth-stat-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px}
     .kth-stat-val{font-size:18px;font-weight:800}
     .kth-modal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
-    .modal-search-icon{position:relative;flex:1;min-width:180px;max-width:320px;display:flex;align-items:center}
-    .modal-search-icon svg{position:absolute;left:9px;width:13px;height:13px;stroke:var(--text-3);pointer-events:none;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
-    .modal-search-icon input{width:100%;padding:6px 10px 6px 30px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:inherit;color:var(--text);background:#f8fafc;outline:none}
-    .modal-search-icon input:focus{border-color:var(--primary-lt);background:#fff}
-    .modal-toolbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .modal-search-wrap{position:relative;flex:1;min-width:180px;max-width:320px;display:flex;align-items:center}
+    .modal-search-wrap svg{position:absolute;left:9px;width:13px;height:13px;stroke:var(--text-3);pointer-events:none;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .modal-search-wrap input{width:100%;padding:6px 10px 6px 30px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:inherit;color:var(--text);background:#f8fafc;outline:none}
+    .modal-search-wrap input:focus{border-color:var(--primary-lt);background:#fff}
     .modal-count{font-size:13px;color:var(--text-2);font-weight:600;white-space:nowrap}
     .btn-dl{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:var(--primary-md);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
     .btn-dl:hover{background:var(--primary-bg);border-color:var(--primary-lt)}
-    .kth-modal-body{overflow-y:auto;padding:0}
+    .kth-modal-body{overflow-y:auto}
     .kth-tbl{width:100%;border-collapse:collapse;font-size:13px}
     .kth-tbl thead tr{background:#f8fafc;position:sticky;top:0;z-index:1}
     .kth-tbl th{padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -190,17 +196,17 @@
     .row-eye-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
     .no-results{text-align:center;padding:28px 16px;color:var(--text-3);font-size:14px}
     .empty-state{text-align:center;padding:28px 16px;color:var(--text-3);font-size:14px}
+    ::-webkit-scrollbar{width:4px;height:4px}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
   </style>
 </head>
 <body>
 
 <header class="hdr">
   <div class="hdr-left">
-    <img
-      src="https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/logo-cmi.png"
+    <img src="https://raw.githubusercontent.com/gis-carbonx/agroforestry/main/data/logo-cmi.png"
       class="hdr-logo" alt="CMI Logo"
-      onerror="this.style.display='none';document.getElementById('logoFallback').style.display='grid'"
-    />
+      onerror="this.style.display='none';document.getElementById('logoFallback').style.display='grid'"/>
     <div class="hdr-logo-fallback" id="logoFallback" style="display:none">
       <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 008 20C19 20 22 3 22 3c-1 2-8 2-8 2 2-5 6-5 6-5-5 0-9 2.5-9.5 7.5C10 8.5 17 8 17 8z"/></svg>
     </div>
@@ -209,72 +215,88 @@
       <div class="hdr-sub">Implementasi Program PT Citra Mulia Inti</div>
     </div>
   </div>
-  <div class="hdr-right">
-    <div style="position:relative;z-index:1000">
-      <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" title="Menu Navigasi">
-        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <div class="menu-dropdown" id="menuDropdown">
-        <div class="menu-hd">Peta Digital Lainnya</div>
-        <a class="menu-item" href="https://gis-carbonx.github.io/patrol-vis-map/" target="_blank">
-          <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-          Patrol-CT Monitoring
-        </a>
-        <div class="menu-hd" style="margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">Versi</div>
-        <div class="menu-item" style="cursor:default;opacity:.7;padding:8px 14px">v1.2</div>
-      </div>
+  <div style="position:relative;z-index:1000">
+    <button class="menu-btn" id="menuBtn" onclick="toggleMenu()">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="menu-dropdown" id="menuDropdown">
+      <div class="menu-hd">Peta Digital Lainnya</div>
+      <a class="menu-item" href="https://gis-carbonx.github.io/patrol-vis-map/" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Patrol-CT Monitoring
+      </a>
+      <div class="menu-hd" style="margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">Versi</div>
+      <div class="menu-item" style="cursor:default;opacity:.7;padding:8px 14px">v1.3</div>
     </div>
   </div>
 </header>
 
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-lbl">Filter Tanggal</span>
+  <div class="filter-presets">
+    <button class="fpreset active" id="fp-ytd"      onclick="setPreset('ytd')">Year to Date</button>
+    <button class="fpreset"        id="fp-thismonth" onclick="setPreset('thismonth')">Bulan Ini</button>
+    <button class="fpreset"        id="fp-last3"    onclick="setPreset('last3')">3 Bulan</button>
+    <button class="fpreset"        id="fp-lastyear" onclick="setPreset('lastyear')">Tahun Lalu</button>
+    <button class="fpreset"        id="fp-all"      onclick="setPreset('all')">Semua</button>
+  </div>
+  <div class="filter-sep"></div>
+  <div class="filter-custom">
+    <label>Dari</label>
+    <input type="date" id="fDateFrom" onchange="setCustomRange()"/>
+    <label>s/d</label>
+    <input type="date" id="fDateTo"   onchange="setCustomRange()"/>
+  </div>
+  <div class="filter-info" id="filterInfo">Memuat...</div>
+</div>
+
+<!-- STATS BAR -->
 <div class="stats-bar">
-  <!-- Card 1: Total vs Target Tahunan -->
+  <!-- Card 1: Total -->
   <div class="sc">
     <div class="sc-lbl">Total Lahan Terealisasi</div>
     <div class="sc-val" id="sTotalHa" style="color:var(--primary)">—</div>
     <div class="prog-bar-wrap"><div class="prog-bar-fill" id="sProgBar" style="width:0%"></div></div>
     <div class="sc-meta">
-      <span class="sc-meta-item">
+      <span class="sc-meta-item" id="sTotalPctWrap">
         <span class="sc-pct-badge" id="sTotalPct">—</span>
       </span>
-      <span class="sc-meta-item sc-target" id="sTotalTarget">Target —: —</span>
+      <span class="sc-meta-item sc-target" id="sTotalTarget"></span>
     </div>
   </div>
-
-  <!-- Card 2: Agroforestri -->
+  <!-- Card 2: Agro -->
   <div class="sc">
     <div class="sc-lbl">Agroforestri</div>
     <div class="sc-val" id="sAgroHa" style="color:var(--c-agro-reg)">—</div>
     <div class="prog-bar-wrap"><div class="prog-bar-fill" id="sAgroProgBar" style="width:0%;background:linear-gradient(90deg,var(--c-agro-reg-lt),var(--c-agro-reg))"></div></div>
     <div class="sc-meta">
-      <span class="sc-meta-item">
+      <span class="sc-meta-item" id="sAgroPctWrap">
         <span class="sc-pct-badge" id="sAgroPct" style="background:#f0fdf4;color:var(--c-agro-reg)">—</span>
       </span>
-      <span class="sc-meta-item sc-target" id="sAgroTarget">Target —: —</span>
+      <span class="sc-meta-item sc-target" id="sAgroTarget"></span>
     </div>
     <div class="sc-meta" style="margin-top:2px">
-      <span class="sc-meta-item"><span class="dot" style="background:var(--c-agro-reg-lt)"></span><span id="sAgroReg">Agro Reguler: —</span></span>
-      <span class="sc-meta-item"><span class="dot" style="background:var(--c-agro-bpo-lt)"></span><span id="sAgroBPO">Bantuan Pupuk Organik: —</span></span>
+      <span class="sc-meta-item"><span class="dot" style="background:var(--c-agro-reg-lt)"></span><span id="sAgroReg">—</span></span>
+      <span class="sc-meta-item"><span class="dot" style="background:var(--c-agro-bpo-lt)"></span><span id="sAgroBPO">—</span></span>
     </div>
   </div>
-
-  <!-- Card 3: Tembawang -->
+  <!-- Card 3: Temb -->
   <div class="sc">
     <div class="sc-lbl">Tembawang</div>
     <div class="sc-val" id="sTembHa" style="color:var(--c-temb-reg)">—</div>
     <div class="prog-bar-wrap"><div class="prog-bar-fill" id="sTembProgBar" style="width:0%;background:linear-gradient(90deg,var(--c-temb-reg-lt),var(--c-temb-reg))"></div></div>
     <div class="sc-meta">
-      <span class="sc-meta-item">
+      <span class="sc-meta-item" id="sTembPctWrap">
         <span class="sc-pct-badge" id="sTembPct" style="background:#fff7ed;color:var(--c-temb-reg)">—</span>
       </span>
-      <span class="sc-meta-item sc-target" id="sTembTarget">Target —: —</span>
+      <span class="sc-meta-item sc-target" id="sTembTarget"></span>
     </div>
     <div class="sc-meta" style="margin-top:2px">
-      <span class="sc-meta-item"><span class="dot" style="background:var(--c-temb-reg-lt)"></span><span id="sTembReg">Temb. Reguler: —</span></span>
-      <span class="sc-meta-item"><span class="dot" style="background:var(--c-temb-mtl-lt)"></span><span id="sTembMTL">Menjaga Tutupan Lahan: —</span></span>
+      <span class="sc-meta-item"><span class="dot" style="background:var(--c-temb-reg-lt)"></span><span id="sTembReg">—</span></span>
+      <span class="sc-meta-item"><span class="dot" style="background:var(--c-temb-mtl-lt)"></span><span id="sTembMTL">—</span></span>
     </div>
   </div>
-
   <!-- Card 4: Anggota -->
   <div class="sc">
     <div class="sc-lbl">Anggota Terdaftar</div>
@@ -282,11 +304,11 @@
     <div class="sc-meta">
       <span class="sc-meta-item" style="color:#3b82f6">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <span id="sLaki">Laki-laki: —</span>
+        <span id="sLaki">—</span>
       </span>
       <span class="sc-meta-item" style="color:#ec4899">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <span id="sPmp">Perempuan: —</span>
+        <span id="sPmp">—</span>
       </span>
     </div>
   </div>
@@ -306,9 +328,7 @@
       </div>
     </div>
     <div class="sb-list-card">
-      <div class="kth-scroll" id="kthList">
-        <div class="empty-state">Memuat data...</div>
-      </div>
+      <div class="kth-scroll" id="kthList"><div class="empty-state">Memuat data...</div></div>
     </div>
     <div class="sb-bottom-card">
       <div class="sb-sec">
@@ -336,27 +356,27 @@
       <div class="basemap-panel">
         <div class="basemap-label-row">BASEMAP</div>
         <div class="basemap-pills">
-          <div class="bm-pill" id="bm_esri_imagery" onclick="switchBasemap('esri_imagery')" title="ESRI Satellite">
+          <div class="bm-pill" id="bm_esri_imagery" onclick="switchBasemap('esri_imagery')">
             <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/5/16/26" alt="ESRI"></div>
             <div class="bm-name">ESRI St</div>
           </div>
-          <div class="bm-pill" id="bm_google_satellite" onclick="switchBasemap('google_satellite')" title="Google Satellite">
+          <div class="bm-pill" id="bm_google_satellite" onclick="switchBasemap('google_satellite')">
             <div class="bm-thumb-wrap"><img src="https://mt1.google.com/vt/lyrs=s&x=26&y=16&z=5" alt="Google"></div>
             <div class="bm-name">Google</div>
           </div>
-          <div class="bm-pill" id="bm_esri_topo" onclick="switchBasemap('esri_topo')" title="ESRI Topo">
+          <div class="bm-pill" id="bm_esri_topo" onclick="switchBasemap('esri_topo')">
             <div class="bm-thumb-wrap"><img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/5/16/26" alt="Topo"></div>
             <div class="bm-name">Topo</div>
           </div>
-          <div class="bm-pill" id="bm_osm" onclick="switchBasemap('osm')" title="OpenStreetMap">
+          <div class="bm-pill" id="bm_osm" onclick="switchBasemap('osm')">
             <div class="bm-thumb-wrap"><img src="https://tile.openstreetmap.org/5/26/16.png" alt="OSM"></div>
             <div class="bm-name">Streets</div>
           </div>
-          <div class="bm-pill active" id="bm_carto_light" onclick="switchBasemap('carto_light')" title="Carto Light">
+          <div class="bm-pill active" id="bm_carto_light" onclick="switchBasemap('carto_light')">
             <div class="bm-thumb-wrap"><img src="https://basemaps.cartocdn.com/light_all/5/26/16.png" alt="Light"></div>
             <div class="bm-name">Light</div>
           </div>
-          <div class="bm-pill" id="bm_carto_dark" onclick="switchBasemap('carto_dark')" title="Dark">
+          <div class="bm-pill" id="bm_carto_dark" onclick="switchBasemap('carto_dark')">
             <div class="bm-thumb-wrap" style="background:#1a1a2e"><img src="https://basemaps.cartocdn.com/dark_all/5/26/16.png" alt="Dark"></div>
             <div class="bm-name">Dark</div>
           </div>
@@ -370,7 +390,7 @@
   </div>
 </div>
 
-<!-- KTH TABLE MODAL -->
+<!-- KTH MODAL -->
 <div class="modal-overlay" id="kthModal" style="display:none" onclick="closeModal(event)">
   <div class="kth-modal" onclick="event.stopPropagation()">
     <div class="kth-modal-hd">
@@ -382,11 +402,11 @@
     </div>
     <div class="kth-modal-stats" id="modalStats"></div>
     <div class="kth-modal-toolbar">
-      <div class="modal-search-icon">
+      <div class="modal-search-wrap">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="modalSearchInput" placeholder="Cari nama petani..." oninput="filterModalTable(this.value)" />
+        <input type="text" id="modalSearchInput" placeholder="Cari nama petani..." oninput="filterModalTable(this.value)"/>
       </div>
-      <div class="modal-toolbar-right">
+      <div style="display:flex;align-items:center;gap:8px">
         <span class="modal-count" id="modalRowCount">0 lahan</span>
         <button class="btn-dl" onclick="downloadCSV()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -397,8 +417,8 @@
     <div class="kth-modal-body">
       <table class="kth-tbl">
         <thead><tr>
-          <th>No</th><th style="width:32px">Aksi</th><th>ID Lahan</th><th>Nama Petani</th><th>Desa</th>
-          <th>Program</th><th>Luas (ha)</th><th>Tgl Realisasi</th>
+          <th>No</th><th style="width:32px">Aksi</th><th>ID Lahan</th><th>Nama Petani</th>
+          <th>Desa</th><th>Program</th><th>Luas (ha)</th><th>Tgl Realisasi</th>
         </tr></thead>
         <tbody id="modalTbody"></tbody>
       </table>
@@ -429,47 +449,33 @@ const PROG = {
 
 // ── Basemap ────────────────────────────────────────────────
 const BASEMAPS = {
-  esri_imagery:    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',   { attribution:'&copy; Esri', maxZoom:19 }),
-  google_satellite:L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',                                           { attribution:'&copy; Google', maxZoom:20 }),
-  esri_topo:       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { attribution:'&copy; Esri', maxZoom:19 }),
-  osm:             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',                                             { attribution:'&copy; OSM contributors', maxZoom:19 }),
-  carto_light:     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',                                { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:20 }),
-  carto_dark:      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',                                 { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:20 }),
+  esri_imagery:    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',   {attribution:'&copy; Esri',maxZoom:19}),
+  google_satellite:L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',                                            {attribution:'&copy; Google',maxZoom:20}),
+  esri_topo:       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',  {attribution:'&copy; Esri',maxZoom:19}),
+  osm:             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',                                              {attribution:'&copy; OSM',maxZoom:19}),
+  carto_light:     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',                                 {attribution:'&copy; CARTO',subdomains:'abcd',maxZoom:20}),
+  carto_dark:      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',                                  {attribution:'&copy; CARTO',subdomains:'abcd',maxZoom:20}),
 };
 let currentBasemap = 'carto_light';
 
 // ── Map Init ───────────────────────────────────────────────
-const map = L.map('map', {
-  zoomControl: false,
-  fadeAnimation: false,
-  zoomAnimation: false,
-  markerZoomAnimation: false,
-  preferCanvas: true,
-});
+const map = L.map('map', { zoomControl:false, fadeAnimation:false, zoomAnimation:false, markerZoomAnimation:false, preferCanvas:true });
 L.control.zoom({ position:'topright' }).addTo(map);
 L.control.scale({ position:'bottomright', metric:true, imperial:false }).addTo(map);
 map.setView([1.0, 111.5], 9);
-
-new ResizeObserver(() => map.invalidateSize({ animate:false, pan:false }))
-  .observe(document.getElementById('mapWrap'));
-
+new ResizeObserver(() => map.invalidateSize({animate:false,pan:false})).observe(document.getElementById('mapWrap'));
 requestAnimationFrame(() => {
   BASEMAPS.carto_light.addTo(map);
   map.getPane('tilePane').style.willChange = 'auto';
-  requestAnimationFrame(() => map.invalidateSize({ animate:false, pan:false }));
+  requestAnimationFrame(() => map.invalidateSize({animate:false,pan:false}));
 });
-
-window.addEventListener('load', () =>
-  requestAnimationFrame(() => requestAnimationFrame(() => map.invalidateSize({ animate:false, pan:false })))
-);
+window.addEventListener('load', () => requestAnimationFrame(() => requestAnimationFrame(() => map.invalidateSize({animate:false,pan:false}))));
 
 function switchBasemap(key) {
   if (key === currentBasemap) return;
   map.removeLayer(BASEMAPS[currentBasemap]);
-  BASEMAPS[key].addTo(map);
-  BASEMAPS[key].bringToBack();
+  BASEMAPS[key].addTo(map).bringToBack();
   currentBasemap = key;
-  map.invalidateSize({ animate:false, pan:false });
   document.querySelectorAll('.bm-pill').forEach(b => b.classList.remove('active'));
   document.getElementById('bm_' + key).classList.add('active');
 }
@@ -478,19 +484,15 @@ function switchBasemap(key) {
 function toggleMenu() {
   const dd = document.getElementById('menuDropdown');
   dd.classList.toggle('open');
-  if (dd.classList.contains('open')) {
-    setTimeout(() => document.addEventListener('click', closeMenuOnClickOutside), 10);
-  } else {
-    document.removeEventListener('click', closeMenuOnClickOutside);
-  }
+  if (dd.classList.contains('open'))
+    setTimeout(() => document.addEventListener('click', closeMenuOut), 10);
+  else
+    document.removeEventListener('click', closeMenuOut);
 }
-
-function closeMenuOnClickOutside(e) {
-  const btn = document.getElementById('menuBtn');
-  const dd  = document.getElementById('menuDropdown');
-  if (!btn.contains(e.target) && !dd.contains(e.target)) {
-    dd.classList.remove('open');
-    document.removeEventListener('click', closeMenuOnClickOutside);
+function closeMenuOut(e) {
+  if (!document.getElementById('menuBtn').contains(e.target) && !document.getElementById('menuDropdown').contains(e.target)) {
+    document.getElementById('menuDropdown').classList.remove('open');
+    document.removeEventListener('click', closeMenuOut);
   }
 }
 
@@ -502,78 +504,183 @@ const layerState  = { agro:true, temb:true, cmi:true };
 const kthVisState = {};
 
 // ── State ──────────────────────────────────────────────────
-let sheetMap   = {};
-let matched    = new Set();
-let kthMap     = {};
-let kthBounds  = {};
-let featureMap = {};
+let sheetMap   = {};   // id → row (semua data mentah)
+let featureMap = {};   // id → { feature, row, layer }
+let kthMaster  = {};   // kth name → semua rows (tidak terfilter)
+let kthBounds  = {};   // kth name → bounds
+let targetData = {};   // year → { agro, agro_minus, temb, temb_minus }
 let currentKTH = null;
-let targetData = {};  // { year: { agro, agro_minus, temb, temb_minus } }
+let currentPreset = 'ytd';
+let filterFrom = null; // Date
+let filterTo   = null; // Date
 
-// ── Target Data ────────────────────────────────────────────
-function parseTargetSheet(csvText) {
-  const { data } = Papa.parse(csvText, { header:false, skipEmptyLines:true });
-  data.forEach((row, i) => {
-    if (i === 0) return; // skip header
-    const tahun      = parseInt(str(row[0]));
-    const agro       = parseFloat(str(row[1])) || 0;
-    const agroMinus  = parseFloat(str(row[2])) || 0;
-    const temb       = parseFloat(str(row[3])) || 0;
-    const tembMinus  = parseFloat(str(row[4])) || 0;
-    if (!isNaN(tahun) && tahun > 2000) {
-      targetData[tahun] = { agro, agro_minus: agroMinus, temb, temb_minus: tembMinus };
+// ── Date Helpers ───────────────────────────────────────────
+// Format di sheet: M/D/YYYY HH:MM:SS  (mis. 5/16/2025 14:00:00)
+function parseSheetDate(s) {
+  if (!s) return null;
+  const c = str(s);
+  // M/D/YYYY ... atau M/D/YYYY
+  const m = c.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return new Date(+m[3], +m[1]-1, +m[2]);
+  // fallback ISO
+  const d = new Date(c);
+  return isNaN(d) ? null : d;
+}
+
+function toDateStr(d) { // Date → YYYY-MM-DD (untuk input[type=date])
+  return d.toISOString().slice(0,10);
+}
+
+function fromDateStr(s) { // YYYY-MM-DD → Date (local midnight)
+  if (!s) return null;
+  const [y,mo,d] = s.split('-').map(Number);
+  return new Date(y, mo-1, d);
+}
+
+function ytdRange() {
+  const now = new Date();
+  return { from: new Date(now.getFullYear(), 0, 1), to: now };
+}
+
+// ── Filter Preset ──────────────────────────────────────────
+function setPreset(p) {
+  currentPreset = p;
+  const now = new Date();
+  let from, to;
+  if      (p === 'ytd')       { from = new Date(now.getFullYear(),0,1);       to = now; }
+  else if (p === 'thismonth') { from = new Date(now.getFullYear(),now.getMonth(),1); to = now; }
+  else if (p === 'last3')     { from = new Date(now.getTime() - 90*864e5);    to = now; }
+  else if (p === 'lastyear')  { from = new Date(now.getFullYear()-1,0,1);     to = new Date(now.getFullYear()-1,11,31); }
+  else                        { from = null; to = null; } // all
+
+  filterFrom = from;
+  filterTo   = to;
+
+  // Sync date inputs
+  document.getElementById('fDateFrom').value = from ? toDateStr(from) : '';
+  document.getElementById('fDateTo').value   = to   ? toDateStr(to)   : '';
+
+  document.querySelectorAll('.fpreset').forEach(b => b.classList.remove('active'));
+  document.getElementById('fp-' + p).classList.add('active');
+  applyFilter();
+}
+
+function setCustomRange() {
+  const fv = document.getElementById('fDateFrom').value;
+  const tv = document.getElementById('fDateTo').value;
+  filterFrom = fv ? fromDateStr(fv) : null;
+  filterTo   = tv ? fromDateStr(tv) : null;
+  // Deactivate all presets — mark as custom
+  currentPreset = 'custom';
+  document.querySelectorAll('.fpreset').forEach(b => b.classList.remove('active'));
+  applyFilter();
+}
+
+// ── Filter Logic ───────────────────────────────────────────
+function rowInRange(row) {
+  if (!filterFrom && !filterTo) return true; // semua
+  const d = parseSheetDate(row.tgl);
+  if (!d) return false; // baris tanpa tanggal tidak masuk filter bertanggal
+  if (filterFrom && d < filterFrom) return false;
+  if (filterTo) {
+    const toEnd = new Date(filterTo); toEnd.setHours(23,59,59,999);
+    if (d > toEnd) return false;
+  }
+  return true;
+}
+
+function applyFilter() {
+  if (!Object.keys(featureMap).length) return; // data belum siap
+
+  // Hitung filtered IDs
+  const filteredIds = new Set(
+    Object.values(sheetMap).filter(r => rowInRange(r)).map(r => r.id)
+  );
+
+  // Update peta: show/hide polygon
+  Object.entries(featureMap).forEach(([id, entry]) => {
+    const row   = entry.row;
+    const group = PROG[row.prog].group;
+    const lg    = group === 'agro' ? lgAgro : lgTemb;
+    const inFilter  = filteredIds.has(id);
+    const kthOn     = kthVisState[row.kth] !== false;
+    if (inFilter && kthOn) {
+      if (!lg.hasLayer(entry.layer)) lg.addLayer(entry.layer);
+    } else {
+      if (lg.hasLayer(entry.layer)) lg.removeLayer(entry.layer);
     }
   });
-  console.log('[target]', targetData);
+
+  // Update stats
+  calcStats(filteredIds);
+
+  // Update KTH list (sidebar)
+  renderKTHList(filteredIds);
+
+  // Update filter info
+  updateFilterInfo(filteredIds.size);
+
+  // Jika modal terbuka, refresh
+  if (currentKTH && document.getElementById('kthModal').style.display !== 'none') {
+    openKTH(currentKTH, filteredIds);
+  }
 }
 
-function getTargetYear() {
-  return new Date().getFullYear();
-}
-
-function getTargetForYear(year) {
-  return targetData[year] || null;
+function updateFilterInfo(count) {
+  let label = '';
+  if      (currentPreset === 'ytd')       label = 'Year to Date';
+  else if (currentPreset === 'thismonth') label = 'Bulan Ini';
+  else if (currentPreset === 'last3')     label = '3 Bulan Terakhir';
+  else if (currentPreset === 'lastyear')  label = 'Tahun Lalu';
+  else if (currentPreset === 'all')       label = 'Semua Data';
+  else                                    label = 'Rentang Kustom';
+  document.getElementById('filterInfo').innerHTML = `${label}: <span>${count} lahan</span>`;
 }
 
 // ── Boot ───────────────────────────────────────────────────
 (async function boot() {
   try {
     setLoad('Memuat data spreadsheet...');
-    const [csvText, targetText] = await Promise.all([getText(CSV_URL), getText(TARGET_URL)]);
+    const [csvText, targetText] = await Promise.all([getText(CSV_URL), getText(TARGET_URL).catch(()=>'')]);
     parseSheet(csvText);
-    parseTargetSheet(targetText);
+    if (targetText) parseTargetSheet(targetText);
     setLoad('Memuat data GeoJSON...');
     const [agroJSON, cmiJSON] = await Promise.all([getJSON(AGRO_URL), getJSON(CMI_URL)]);
-    setLoad('Memroses & merender peta...');
+    setLoad('Merender peta...');
     renderCMI(cmiJSON);
     renderAgro(agroJSON);
-    calcStats();
-    renderKTHList();
+    // Set default filter YTD dan apply
+    const { from, to } = ytdRange();
+    filterFrom = from;
+    filterTo   = to;
+    document.getElementById('fDateFrom').value = toDateStr(from);
+    document.getElementById('fDateTo').value   = toDateStr(to);
+    applyFilter();
     fitAll();
     hideLoad();
-  } catch (err) {
-    console.error('[SIG]', err);
-    setLoad('⚠ Gagal memuat data. Pastikan spreadsheet bersifat publik dan repo dapat diakses.', true);
+  } catch(err) {
+    console.error(err);
+    setLoad('⚠ Gagal memuat data. Pastikan spreadsheet bersifat publik.', true);
   }
 })();
 
-async function getText(url) { const r = await fetch(url); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }
-async function getJSON(url)  { const r = await fetch(url); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }
+async function getText(url) { const r=await fetch(url); if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }
+async function getJSON(url)  { const r=await fetch(url); if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }
 
 // ── Parse Sheet ────────────────────────────────────────────
-function resolveProgram(aReg, aBPO, tReg, tMTL, tipeStr) {
-  if (aReg > 0) return 'Agro_Reg';
-  if (aBPO > 0) return 'Agro_BPO';
-  if (tReg > 0) return 'Temb_Reg';
-  if (tMTL > 0) return 'Temb_MTL';
-  const t = tipeStr.toLowerCase().trim();
+function resolveProgram(aReg,aBPO,tReg,tMTL,tipeStr) {
+  if (aReg>0) return 'Agro_Reg';
+  if (aBPO>0) return 'Agro_BPO';
+  if (tReg>0) return 'Temb_Reg';
+  if (tMTL>0) return 'Temb_MTL';
+  const t = tipeStr.toLowerCase();
   if (t.includes('tembawang')) return 'Temb_Reg';
-  if (t.includes('agroforestri') || t.includes('agroforestry')) return 'Agro_Reg';
+  if (t.includes('agro'))      return 'Agro_Reg';
   return null;
 }
 
 function parseSheet(csvText) {
-  const { data } = Papa.parse(csvText, { header:true, skipEmptyLines:true, transformHeader: h => h.trim() });
+  const {data} = Papa.parse(csvText, {header:true, skipEmptyLines:true, transformHeader:h=>h.trim()});
   data.forEach(raw => {
     const id = str(raw['ID_Petak']||raw['id_petak']||raw['ID Petak']||raw['I']||'');
     if (!id) return;
@@ -588,180 +695,191 @@ function parseSheet(csvText) {
     const aBPO   = num(raw['Agro_BPO']||raw['Agro BPO']||raw['L']||0);
     const tReg   = num(raw['Temb_Reg']||raw['Temb Reg']||raw['M']||0);
     const tMTL   = num(raw['Temb_MTL']||raw['Temb MTL']||raw['N']||0);
-    const prog   = resolveProgram(aReg, aBPO, tReg, tMTL, tipe);
+    const prog   = resolveProgram(aReg,aBPO,tReg,tMTL,tipe);
     if (!prog) return;
-    sheetMap[id] = { id, kth, luas: luas > 0 ? luas : (aReg||aBPO||tReg||tMTL||0), tipe, petani, jk, desa, tgl, aReg, aBPO, tReg, tMTL, prog };
+    const effectiveLuas = luas>0 ? luas : (aReg||aBPO||tReg||tMTL||0);
+    sheetMap[id] = {id,kth,luas:effectiveLuas,tipe,petani,jk,desa,tgl,aReg,aBPO,tReg,tMTL,prog};
   });
-  console.log(`[sheet] ${Object.keys(sheetMap).length} baris valid dimuat`);
 }
 
-// ── Render ─────────────────────────────────────────────────
+function parseTargetSheet(csvText) {
+  const {data} = Papa.parse(csvText, {header:false, skipEmptyLines:true});
+  data.forEach((row,i) => {
+    if (i===0) return;
+    const tahun = parseInt(str(row[0]));
+    if (isNaN(tahun)||tahun<2000) return;
+    targetData[tahun] = {
+      agro:       parseFloat(str(row[1]))||0,
+      agro_minus: parseFloat(str(row[2]))||0,
+      temb:       parseFloat(str(row[3]))||0,
+      temb_minus: parseFloat(str(row[4]))||0,
+    };
+  });
+}
+
+// ── Render GeoJSON ─────────────────────────────────────────
 function renderCMI(gj) {
-  L.geoJSON(gj, { style: () => ({ color:'#475569', weight:2.5, dashArray:'8 5', fillOpacity:0, opacity:0.9 }) }).addTo(lgCMI);
+  L.geoJSON(gj, {style:()=>({color:'#475569',weight:2.5,dashArray:'8 5',fillOpacity:0,opacity:.9})}).addTo(lgCMI);
 }
 
 function renderAgro(gj) {
-  const features = gj.type === 'FeatureCollection' ? gj.features : [gj];
-  let rendered = 0;
+  const features = gj.type==='FeatureCollection' ? gj.features : [gj];
   features.forEach(feat => {
-    const props   = feat.properties || {};
+    const props   = feat.properties||{};
     const idLahan = str(props.id_lahan||props.ID_Petak||props.id_petak||props.ID_LAHAN||props.Id_Lahan||props.IDLAHAN||'');
     if (!idLahan) return;
     const row = sheetMap[idLahan];
-    if (!row || !PROG[row.prog]) return;
-    matched.add(idLahan);
-    rendered++;
+    if (!row||!PROG[row.prog]) return;
     const st    = PROG[row.prog];
     const layer = L.geoJSON(feat, {
-      style: () => ({ color:st.stroke, weight:2, fillColor:st.fill, fillOpacity:0.75, opacity:1 }),
+      style:()=>({color:st.stroke,weight:2,fillColor:st.fill,fillOpacity:0.75,opacity:1}),
     });
-    layer.bindPopup(() => buildPopup(feat, row), { maxWidth:270, minWidth:220, autoPan:true });
-    layer.on('mouseover', e => { e.target.setStyle({ fillOpacity:0.92, weight:3 }); e.target.bringToFront(); });
-    layer.on('mouseout',  e => { e.target.setStyle({ fillOpacity:0.75, weight:2 }); });
-    (st.group === 'agro' ? lgAgro : lgTemb).addLayer(layer);
-    featureMap[idLahan] = { feature:feat, row, layer };
+    layer.bindPopup(()=>buildPopup(feat,row), {maxWidth:270,minWidth:220,autoPan:true});
+    layer.on('mouseover', e=>{e.target.setStyle({fillOpacity:.92,weight:3});e.target.bringToFront();});
+    layer.on('mouseout',  e=>{e.target.setStyle({fillOpacity:.75,weight:2});});
+    // Tambahkan ke layer group (akan dikontrol oleh applyFilter)
+    (st.group==='agro'?lgAgro:lgTemb).addLayer(layer);
+    featureMap[idLahan] = {feature:feat,row,layer};
 
-    if (!kthMap[row.kth]) {
-      kthMap[row.kth] = { name:row.kth, desa:row.desa, agro:0, temb:0, aReg:0, aBPO:0, tReg:0, tMTL:0, layers:[], rows:[], petaniSet:new Set() };
+    // Daftarkan ke kthMaster (semua rows, tidak tergantung filter)
+    if (!kthMaster[row.kth]) {
+      kthMaster[row.kth] = {name:row.kth,desa:row.desa,rows:[],layers:[]};
       kthVisState[row.kth] = true;
     }
-    const k = kthMap[row.kth];
-    k.agro += row.aReg + row.aBPO;
-    k.temb += row.tReg + row.tMTL;
-    k.aReg += row.aReg; k.aBPO += row.aBPO;
-    k.tReg += row.tReg; k.tMTL += row.tMTL;
-    k.petaniSet.add(row.petani.toLowerCase());
-    k.layers.push(layer);
-    k.rows.push(row);
+    kthMaster[row.kth].rows.push(row);
+    kthMaster[row.kth].layers.push(layer);
   });
-  Object.entries(kthMap).forEach(([name, k]) => {
+  // Hitung bounds per KTH (dari semua layers)
+  Object.entries(kthMaster).forEach(([name,k])=>{
     if (k.layers.length) kthBounds[name] = L.featureGroup(k.layers).getBounds();
   });
-  console.log(`[geo] ${rendered} polygon dirender dari ${features.length} fitur GeoJSON`);
 }
 
-function buildPopup(feat, row) {
+function buildPopup(feat,row) {
   const st = PROG[row.prog];
   const fields = [
-    ['ID Lahan',     str(feat.properties?.id_lahan || row.id)],
-    ['Nama Petani',  row.petani],
-    ['KTH',          row.kth],
-    ['Desa',         row.desa],
-    ['Tipe',         row.tipe || '—'],
-    ['Luas',         fmt(row.luas) + ' ha'],
-    ['Program',      st.label],
-    ['Tgl Realisasi',row.tgl || '—'],
+    ['ID Lahan',   str(feat.properties?.id_lahan||row.id)],
+    ['Nama Petani',row.petani],['KTH',row.kth],['Desa',row.desa],
+    ['Tipe',       row.tipe||'—'],['Luas',fmt(row.luas)+' ha'],
+    ['Program',    st.label],['Tgl Realisasi',row.tgl||'—'],
   ];
-  const rows = fields.map(([l,v]) =>
-    `<div class="pop-row"><span class="pop-lbl">${l}</span><span class="pop-val">${esc(v)}</span></div>`
-  ).join('');
-  return `<div class="pop-hd" style="background:${st.hd}"><div class="pop-hd-dot"></div>${esc(st.label)}</div><div class="pop-bd">${rows}</div>`;
+  return `<div class="pop-hd" style="background:${st.hd}"><div class="pop-hd-dot"></div>${esc(st.label)}</div>
+    <div class="pop-bd">${fields.map(([l,v])=>`<div class="pop-row"><span class="pop-lbl">${l}</span><span class="pop-val">${esc(v)}</span></div>`).join('')}</div>`;
 }
 
-// ── Map Actions ────────────────────────────────────────────
-function zoomToLahan(id) {
-  const entry = featureMap[id];
-  if (!entry) return;
-  try { map.fitBounds(L.geoJSON(entry.feature).getBounds().pad(0.5)); } catch(e) {}
-  entry.layer.setStyle({ weight:4, fillOpacity:0.95 });
-  setTimeout(() => entry.layer.setStyle({ weight:2, fillOpacity:0.75 }), 2000);
-  setTimeout(() => { try { entry.layer.openPopup(); } catch(e) {} }, 400);
-}
+// ── Stats (filtered) ───────────────────────────────────────
+function calcStats(filteredIds) {
+  let aReg=0,aBPO=0,tReg=0,tMTL=0;
+  const uniq=new Set(),laki=new Set(),pmp=new Set();
 
-// ── Stats ──────────────────────────────────────────────────
-function calcStats() {
-  let aReg=0, aBPO=0, tReg=0, tMTL=0;
-  const uniq=new Set(), laki=new Set(), pmp=new Set();
-
-  Object.values(sheetMap).forEach(r => {
-    if (!matched.has(r.id)) return;
+  filteredIds.forEach(id => {
+    const r = sheetMap[id];
+    if (!r) return;
     if (r.aReg>0||r.aBPO>0||r.tReg>0||r.tMTL>0) {
-      aReg+=r.aReg; aBPO+=r.aBPO; tReg+=r.tReg; tMTL+=r.tMTL;
+      aReg+=r.aReg;aBPO+=r.aBPO;tReg+=r.tReg;tMTL+=r.tMTL;
     } else {
-      const luas = r.luas > 0 ? r.luas : 0;
-      if      (r.prog==='Agro_Reg') aReg+=luas;
-      else if (r.prog==='Agro_BPO') aBPO+=luas;
-      else if (r.prog==='Temb_Reg') tReg+=luas;
-      else if (r.prog==='Temb_MTL') tMTL+=luas;
+      if      (r.prog==='Agro_Reg') aReg+=r.luas;
+      else if (r.prog==='Agro_BPO') aBPO+=r.luas;
+      else if (r.prog==='Temb_Reg') tReg+=r.luas;
+      else if (r.prog==='Temb_MTL') tMTL+=r.luas;
     }
     if (r.petani) {
-      const pk = r.petani.toLowerCase();
+      const pk=r.petani.toLowerCase();
       uniq.add(pk);
       if      (r.jk.toLowerCase().includes('laki'))      laki.add(pk);
       else if (r.jk.toLowerCase().includes('perempuan')) pmp.add(pk);
     }
   });
 
-  const totalAgro = aReg + aBPO;
-  const totalTemb = tReg + tMTL;
-  const totalReal = totalAgro + totalTemb;
+  const totalAgro = aReg+aBPO;
+  const totalTemb = tReg+tMTL;
+  const totalReal = totalAgro+totalTemb;
+  const isYTD     = currentPreset === 'ytd';
+  const year      = new Date().getFullYear();
+  const tgt       = targetData[year] || null;
 
-  // Target data
-  const year = getTargetYear();
-  const tgt  = getTargetForYear(year);
+  // Fungsi set target info (hanya tampil saat YTD)
+  function setTargetUI(pctId,barId,targetId, real, tgtVal, badgeBg, badgeColor) {
+    const pctEl = document.getElementById(pctId);
+    const barEl = document.getElementById(barId);
+    const tgtEl = document.getElementById(targetId);
+    if (isYTD && tgt && tgtVal>0) {
+      const pct = Math.min(999,(real/tgtVal*100));
+      pctEl.textContent   = pct.toFixed(1)+'% dari target';
+      pctEl.style.background = badgeBg;
+      pctEl.style.color      = badgeColor;
+      document.getElementById(pctId+'Wrap').style.display = '';
+      barEl.style.width    = Math.min(100,pct).toFixed(1)+'%';
+      tgtEl.textContent    = `Target ${year}: ${fmt(tgtVal)} ha`;
+      tgtEl.style.display  = '';
+    } else {
+      document.getElementById(pctId+'Wrap').style.display = 'none';
+      barEl.style.width   = '0%';
+      tgtEl.style.display = 'none';
+    }
+  }
 
-  // Total card — pakai target total (kolom B agro + kolom D temb)
-  const tgtTotal = tgt ? (tgt.agro + tgt.temb) : 0;
-  const pctTotal = tgtTotal > 0 ? (totalReal / tgtTotal * 100) : 0;
-  setText('sTotalHa', fmt(totalReal) + ' ha');
-  document.getElementById('sProgBar').style.width = Math.min(100, pctTotal).toFixed(1) + '%';
-  setText('sTotalPct', tgtTotal > 0 ? pctTotal.toFixed(1) + '% dari target' : '—');
-  setText('sTotalTarget', tgt ? `Target ${year}: ${fmt(tgtTotal)} ha` : 'Data target tidak tersedia');
+  setText('sTotalHa', fmt(totalReal)+' ha');
+  setTargetUI('sTotalPct','sProgBar','sTotalTarget',
+    totalReal, tgt?(tgt.agro+tgt.temb):0, 'var(--primary-bg)', 'var(--primary-md)');
 
-  // Agro card — pakai target tahunan agro total (kolom B + kolom C)
-  const tgtAgro = tgt ? (tgt.agro + tgt.agro_minus) : 0;
-  const pctAgro = tgtAgro > 0 ? (totalAgro / tgtAgro * 100) : 0;
-  setText('sAgroHa', fmt(totalAgro) + ' ha');
-  document.getElementById('sAgroProgBar').style.width = Math.min(100, pctAgro).toFixed(1) + '%';
-  setText('sAgroPct', tgtAgro > 0 ? pctAgro.toFixed(1) + '% dari target' : '—');
-  setText('sAgroTarget', tgt ? `Target ${year}: ${fmt(tgtAgro)} ha` : 'Data target tidak tersedia');
-  setText('sAgroReg', 'Agro Reguler: ' + fmt(aReg) + ' ha');
-  setText('sAgroBPO', 'Bantuan Pupuk Organik: ' + fmt(aBPO) + ' ha');
+  setText('sAgroHa', fmt(totalAgro)+' ha');
+  setText('sAgroReg', 'Agro Reguler: '+fmt(aReg)+' ha');
+  setText('sAgroBPO', 'Bantuan Pupuk Organik: '+fmt(aBPO)+' ha');
+  setTargetUI('sAgroPct','sAgroProgBar','sAgroTarget',
+    totalAgro, tgt?(tgt.agro+tgt.agro_minus):0, '#f0fdf4', 'var(--c-agro-reg)');
 
-  // Temb card — pakai target tahunan temb total (kolom D + kolom E)
-  const tgtTemb = tgt ? (tgt.temb + tgt.temb_minus) : 0;
-  const pctTemb = tgtTemb > 0 ? (totalTemb / tgtTemb * 100) : 0;
-  setText('sTembHa', fmt(totalTemb) + ' ha');
-  document.getElementById('sTembProgBar').style.width = Math.min(100, pctTemb).toFixed(1) + '%';
-  setText('sTembPct', tgtTemb > 0 ? pctTemb.toFixed(1) + '% dari target' : '—');
-  setText('sTembTarget', tgt ? `Target ${year}: ${fmt(tgtTemb)} ha` : 'Data target tidak tersedia');
-  setText('sTembReg', 'Temb. Reguler: ' + fmt(tReg) + ' ha');
-  setText('sTembMTL', 'Temb. MTL: ' + fmt(tMTL) + ' ha');
+  setText('sTembHa', fmt(totalTemb)+' ha');
+  setText('sTembReg', 'Temb. Reguler: '+fmt(tReg)+' ha');
+  setText('sTembMTL', 'Temb. MTL: '+fmt(tMTL)+' ha');
+  setTargetUI('sTembPct','sTembProgBar','sTembTarget',
+    totalTemb, tgt?(tgt.temb+tgt.temb_minus):0, '#fff7ed', 'var(--c-temb-reg)');
 
-  // Anggota card
   setText('sAnggota', uniq.size);
-  setText('sLaki',    'Laki-laki: ' + laki.size);
-  setText('sPmp',     'Perempuan: ' + pmp.size);
+  setText('sLaki',    'Laki-laki: '+laki.size);
+  setText('sPmp',     'Perempuan: '+pmp.size);
 }
 
-// ── KTH List ───────────────────────────────────────────────
-const ICON_EYE     = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-const ICON_TABLE   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`;
-const ICON_VIS_ON  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-const ICON_VIS_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-5.07 5.93"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
-const ICON_ZOOM_ROW = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+// ── KTH List (filtered) ────────────────────────────────────
+const SVG_EYE     = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const SVG_TABLE   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`;
+const SVG_VIS_ON  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const SVG_VIS_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-5.07 5.93"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
 
-function renderKTHList() {
-  const list = Object.values(kthMap).sort((a,b) => (b.agro+b.temb) - (a.agro+a.temb));
+function renderKTHList(filteredIds) {
+  // Hitung nilai agro/temb hanya dari filtered rows
+  const kthFiltered = {};
+  filteredIds.forEach(id => {
+    const r = sheetMap[id];
+    if (!r) return;
+    if (!kthFiltered[r.kth]) kthFiltered[r.kth] = {agro:0,temb:0,count:0,desa:r.desa};
+    kthFiltered[r.kth].agro  += r.aReg+r.aBPO || (r.prog==='Agro_Reg'||r.prog==='Agro_BPO'?r.luas:0);
+    kthFiltered[r.kth].temb  += r.tReg+r.tMTL || (r.prog==='Temb_Reg'||r.prog==='Temb_MTL'?r.luas:0);
+    kthFiltered[r.kth].count++;
+  });
+
+  const list = Object.entries(kthFiltered)
+    .map(([name,v])=>({name,...v}))
+    .sort((a,b)=>(b.agro+b.temb)-(a.agro+a.temb));
+
   setText('kthCount', list.length);
   const el = document.getElementById('kthList');
-  if (!list.length) { el.innerHTML = '<div class="empty-state">Tidak ada data KTH</div>'; return; }
+  if (!list.length) { el.innerHTML='<div class="empty-state">Tidak ada data pada rentang ini</div>'; return; }
 
   el.innerHTML = list.map(k => {
     const isOn = kthVisState[k.name] !== false;
-    return `
-    <div class="kth-card${isOn ? '' : ' hidden-kth'}" data-kth="${esc(k.name)}">
+    return `<div class="kth-card${isOn?'':' hidden-kth'}" data-kth="${esc(k.name)}">
       <div class="kth-card-top">
         <div class="kth-info">
           <div class="kth-nm">${esc(k.name)}</div>
-          <div class="kth-ds">${esc(k.desa)}</div>
+          <div class="kth-ds">${esc(k.desa)} · ${k.count} petak</div>
         </div>
         <div class="kth-actions">
-          <button class="kth-btn eye"  title="Zoom ke area KTH"  onclick="zoomKTH('${esc(k.name)}')">${ICON_EYE}</button>
-          <button class="kth-btn"      title="Lihat tabel lahan" onclick="openKTH('${esc(k.name)}')">${ICON_TABLE}</button>
-          <button class="kth-btn ${isOn ? 'vis-on' : 'vis-off'}" id="visbtn-${esc(k.name)}"
-            title="${isOn ? 'Sembunyikan' : 'Tampilkan'} lahan KTH ini"
-            onclick="toggleKTHVis('${esc(k.name)}')">${isOn ? ICON_VIS_ON : ICON_VIS_OFF}</button>
+          <button class="kth-btn" title="Zoom" onclick="zoomKTH('${esc(k.name)}')">${SVG_EYE}</button>
+          <button class="kth-btn" title="Tabel" onclick="openKTH('${esc(k.name)}')">${SVG_TABLE}</button>
+          <button class="kth-btn ${isOn?'vis-on':'vis-off'}" id="visbtn-${esc(k.name)}"
+            title="${isOn?'Sembunyikan':'Tampilkan'}"
+            onclick="toggleKTHVis('${esc(k.name)}')">${isOn?SVG_VIS_ON:SVG_VIS_OFF}</button>
         </div>
       </div>
       <div class="kth-pills">
@@ -772,76 +890,74 @@ function renderKTHList() {
   }).join('');
 }
 
+// ── KTH Vis Toggle ─────────────────────────────────────────
 function toggleKTHVis(name) {
-  const k = kthMap[name];
-  if (!k) return;
-  kthVisState[name] = kthVisState[name] === false;
+  kthVisState[name] = kthVisState[name] === false ? true : false;
   const isOn = kthVisState[name] !== false;
-  k.layers.forEach(l => {
-    if (isOn) {
-      const row = k.rows.find(r => featureMap[r.id]?.layer === l);
-      if (row) (PROG[row.prog].group === 'agro' ? lgAgro : lgTemb).addLayer(l);
-    } else {
-      lgAgro.removeLayer(l);
-      lgTemb.removeLayer(l);
-    }
+  // Re-apply filter (ini akan handle show/hide berdasarkan filter + vis state)
+  const filteredIds = new Set(Object.values(sheetMap).filter(r=>rowInRange(r)).map(r=>r.id));
+  Object.entries(featureMap).forEach(([id,entry]) => {
+    if (entry.row.kth !== name) return;
+    const lg = PROG[entry.row.prog].group==='agro'?lgAgro:lgTemb;
+    const inFilter = filteredIds.has(id);
+    if (inFilter && isOn) { if (!lg.hasLayer(entry.layer)) lg.addLayer(entry.layer); }
+    else                  { if (lg.hasLayer(entry.layer)) lg.removeLayer(entry.layer); }
   });
   const card = document.querySelector(`.kth-card[data-kth="${name}"]`);
   if (card) card.classList.toggle('hidden-kth', !isOn);
   const btn = document.getElementById('visbtn-' + name);
-  if (btn) {
-    btn.className = `kth-btn ${isOn ? 'vis-on' : 'vis-off'}`;
-    btn.title     = isOn ? 'Sembunyikan lahan KTH ini' : 'Tampilkan lahan KTH ini';
-    btn.innerHTML = isOn ? ICON_VIS_ON : ICON_VIS_OFF;
-  }
+  if (btn) { btn.className=`kth-btn ${isOn?'vis-on':'vis-off'}`; btn.innerHTML=isOn?SVG_VIS_ON:SVG_VIS_OFF; }
 }
 
 function zoomKTH(name) {
-  document.querySelectorAll('.kth-card').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.kth-card').forEach(el=>el.classList.remove('active'));
   const card = document.querySelector(`.kth-card[data-kth="${name}"]`);
-  if (card) { card.classList.add('active'); card.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+  if (card) { card.classList.add('active'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
   if (kthBounds[name]) map.fitBounds(kthBounds[name].pad(0.22));
-  const k = kthMap[name];
-  if (k && kthVisState[name] !== false) {
-    k.layers.forEach(l => l.setStyle({ weight:4, fillOpacity:0.95 }));
-    setTimeout(() => k.layers.forEach(l => l.setStyle({ weight:2, fillOpacity:0.75 })), 1500);
-  }
 }
 
 // ── KTH Modal ──────────────────────────────────────────────
-function openKTH(name) {
-  const k = kthMap[name];
-  if (!k) return;
+function openKTH(name, filteredIds) {
+  const master = kthMaster[name];
+  if (!master) return;
   currentKTH = name;
-  document.querySelectorAll('.kth-card').forEach(el => el.classList.remove('active'));
+
+  // Jika filteredIds tidak dikirim, hitung ulang
+  if (!filteredIds) {
+    filteredIds = new Set(Object.values(sheetMap).filter(r=>rowInRange(r)).map(r=>r.id));
+  }
+
+  // Rows yang tampil = interseksi master rows & filteredIds
+  const rows = master.rows.filter(r => filteredIds.has(r.id));
+
+  document.querySelectorAll('.kth-card').forEach(el=>el.classList.remove('active'));
   const card = document.querySelector(`.kth-card[data-kth="${name}"]`);
-  if (card) { card.classList.add('active'); card.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+  if (card) { card.classList.add('active'); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 
-  setText('modalTitle', k.name);
-  setText('modalSub', `${k.desa} · ${k.rows.length} lahan · ${k.petaniSet.size} petani`);
+  const agro = rows.reduce((s,r)=>s+(r.aReg+r.aBPO||(r.prog==='Agro_Reg'||r.prog==='Agro_BPO'?r.luas:0)),0);
+  const temb = rows.reduce((s,r)=>s+(r.tReg+r.tMTL||(r.prog==='Temb_Reg'||r.prog==='Temb_MTL'?r.luas:0)),0);
+  const petaniSet = new Set(rows.map(r=>r.petani.toLowerCase()));
 
-  const total = k.agro + k.temb;
+  setText('modalTitle', name);
+  setText('modalSub', `${master.desa} · ${rows.length} lahan · ${petaniSet.size} petani`);
   document.getElementById('modalStats').innerHTML = `
-    <div class="kth-stat-box"><div class="kth-stat-lbl">Total Lahan</div><div class="kth-stat-val" style="color:var(--primary)">${fmt(total)} ha</div></div>
-    <div class="kth-stat-box"><div class="kth-stat-lbl">Agroforestri</div><div class="kth-stat-val" style="color:var(--c-agro-reg)">${fmt(k.agro)} ha</div></div>
-    <div class="kth-stat-box"><div class="kth-stat-lbl">Tembawang</div><div class="kth-stat-val" style="color:var(--c-temb-reg)">${fmt(k.temb)} ha</div></div>
-    <div class="kth-stat-box"><div class="kth-stat-lbl">Jumlah Petani</div><div class="kth-stat-val" style="color:#3b82f6">${k.petaniSet.size}</div></div>
-    <div class="kth-stat-box"><div class="kth-stat-lbl">Jumlah Petak</div><div class="kth-stat-val">${k.rows.length}</div></div>`;
+    <div class="kth-stat-box"><div class="kth-stat-lbl">Total Lahan</div><div class="kth-stat-val" style="color:var(--primary)">${fmt(agro+temb)} ha</div></div>
+    <div class="kth-stat-box"><div class="kth-stat-lbl">Agroforestri</div><div class="kth-stat-val" style="color:var(--c-agro-reg)">${fmt(agro)} ha</div></div>
+    <div class="kth-stat-box"><div class="kth-stat-lbl">Tembawang</div><div class="kth-stat-val" style="color:var(--c-temb-reg)">${fmt(temb)} ha</div></div>
+    <div class="kth-stat-box"><div class="kth-stat-lbl">Petani</div><div class="kth-stat-val" style="color:#3b82f6">${petaniSet.size}</div></div>
+    <div class="kth-stat-box"><div class="kth-stat-lbl">Petak</div><div class="kth-stat-val">${rows.length}</div></div>`;
 
   document.getElementById('modalSearchInput').value = '';
   document.getElementById('noResults').style.display = 'none';
-  setText('modalRowCount', k.rows.length + ' lahan');
+  setText('modalRowCount', rows.length+' lahan');
 
-  document.getElementById('modalTbody').innerHTML = k.rows.map((r, i) => {
+  document.getElementById('modalTbody').innerHTML = rows.map((r,i) => {
     const st = PROG[r.prog];
     return `<tr data-petani="${esc(r.petani.toLowerCase())}">
       <td style="color:var(--text-3);font-size:12px">${i+1}</td>
-      <td style="padding:6px 4px">
-        <button class="row-eye-btn" title="Zoom ke lokasi lahan di peta" onclick="zoomToLahan('${esc(r.id)}')">${ICON_ZOOM_ROW}</button>
-      </td>
+      <td style="padding:6px 4px"><button class="row-eye-btn" onclick="zoomToLahan('${esc(r.id)}')">${SVG_EYE}</button></td>
       <td style="font-family:monospace;font-size:12px">${esc(r.id)}</td>
-      <td>${esc(r.petani)}</td>
-      <td>${esc(r.desa)}</td>
+      <td>${esc(r.petani)}</td><td>${esc(r.desa)}</td>
       <td><span class="prog-tag ${st?.tagCls||''}">${esc(st?.label||r.prog)}</span></td>
       <td style="font-weight:600">${fmt(r.luas)}</td>
       <td style="color:var(--text-2)">${esc(r.tgl)||'—'}</td>
@@ -853,15 +969,14 @@ function openKTH(name) {
 
 function filterModalTable(q) {
   const term = q.toLowerCase().trim();
-  const rows = document.querySelectorAll('#modalTbody tr');
-  let visible = 0;
-  rows.forEach(tr => {
+  let vis = 0;
+  document.querySelectorAll('#modalTbody tr').forEach(tr => {
     const show = !term || (tr.getAttribute('data-petani')||'').includes(term);
     tr.classList.toggle('hidden-row', !show);
-    if (show) visible++;
+    if (show) vis++;
   });
-  setText('modalRowCount', visible + ' lahan');
-  document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+  setText('modalRowCount', vis+' lahan');
+  document.getElementById('noResults').style.display = vis===0?'block':'none';
 }
 
 function closeModal(e) {
@@ -872,73 +987,63 @@ function closeModal(e) {
 
 function downloadCSV() {
   if (!currentKTH) return;
-  const k = kthMap[currentKTH];
-  const headers = ['No','ID Lahan','Nama Petani','KTH','Desa','Tipe','Program','Luas (ha)','Tgl Realisasi'];
-  const rows    = k.rows.map((r,i) => [i+1, r.id, r.petani, r.kth, r.desa, r.tipe, PROG[r.prog]?.label||r.prog, r.luas, r.tgl]);
-  const csv     = [headers, ...rows].map(r => r.map(v => `"${str(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a       = Object.assign(document.createElement('a'), {
-    href:     URL.createObjectURL(new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8' })),
-    download: `KTH_${currentKTH.replace(/\s+/g,'_')}.csv`,
+  const filteredIds = new Set(Object.values(sheetMap).filter(r=>rowInRange(r)).map(r=>r.id));
+  const rows = (kthMaster[currentKTH]?.rows||[]).filter(r=>filteredIds.has(r.id));
+  const hdr  = ['No','ID Lahan','Nama Petani','KTH','Desa','Tipe','Program','Luas (ha)','Tgl Realisasi'];
+  const body = rows.map((r,i)=>[i+1,r.id,r.petani,r.kth,r.desa,r.tipe,PROG[r.prog]?.label||r.prog,r.luas,r.tgl]);
+  const csv  = [hdr,...body].map(r=>r.map(v=>`"${str(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = Object.assign(document.createElement('a'),{
+    href: URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})),
+    download:`KTH_${currentKTH.replace(/\s+/g,'_')}.csv`,
   });
-  a.click();
-  URL.revokeObjectURL(a.href);
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function zoomToLahan(id) {
+  const entry = featureMap[id];
+  if (!entry) return;
+  try { map.fitBounds(L.geoJSON(entry.feature).getBounds().pad(0.5)); } catch(e){}
+  entry.layer.setStyle({weight:4,fillOpacity:.95});
+  setTimeout(()=>entry.layer.setStyle({weight:2,fillOpacity:.75}),2000);
+  setTimeout(()=>{ try{entry.layer.openPopup();}catch(e){} },400);
 }
 
 // ── Layer Toggle ───────────────────────────────────────────
 function toggleLayer(which) {
   layerState[which] = !layerState[which];
-  const on  = layerState[which];
-  const lg  = which==='agro' ? lgAgro : which==='temb' ? lgTemb : lgCMI;
+  const on = layerState[which];
+  const lg = which==='agro'?lgAgro:which==='temb'?lgTemb:lgCMI;
   if (on) map.addLayer(lg); else map.removeLayer(lg);
-  document.getElementById('tog-' + which).classList.toggle('off', !on);
+  document.getElementById('tog-'+which).classList.toggle('off',!on);
 }
 
 function fitAll() {
-  const layers = [];
-  lgAgro.eachLayer(l => layers.push(l));
-  lgTemb.eachLayer(l => layers.push(l));
+  const layers=[];
+  lgAgro.eachLayer(l=>layers.push(l));
+  lgTemb.eachLayer(l=>layers.push(l));
   if (layers.length) {
     map.fitBounds(L.featureGroup(layers).getBounds().pad(0.1));
-    setTimeout(() => map.invalidateSize({ animate:false, pan:false }), 100);
+    setTimeout(()=>map.invalidateSize({animate:false,pan:false}),100);
   }
 }
 
 // ── Loading ────────────────────────────────────────────────
-function setLoad(msg, isErr=false) {
-  const o = document.getElementById('loadingOverlay');
-  const t = document.getElementById('loadTxt');
-  o.style.display = 'flex';
-  t.textContent   = msg;
-  if (isErr) {
-    o.querySelector('.spinner').style.display = 'none';
-    Object.assign(t.style, { color:'#dc2626', maxWidth:'260px', textAlign:'center', lineHeight:'1.5' });
-  }
+function setLoad(msg,isErr=false) {
+  const o=document.getElementById('loadingOverlay'), t=document.getElementById('loadTxt');
+  o.style.display='flex'; t.textContent=msg;
+  if (isErr) { o.querySelector('.spinner').style.display='none'; Object.assign(t.style,{color:'#dc2626',maxWidth:'260px',textAlign:'center',lineHeight:'1.5'}); }
 }
-
 function hideLoad() {
-  document.getElementById('loadingOverlay').style.display = 'none';
-  requestAnimationFrame(() => requestAnimationFrame(() => map.invalidateSize({ animate:false, pan:false })));
+  document.getElementById('loadingOverlay').style.display='none';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>map.invalidateSize({animate:false,pan:false})));
 }
 
 // ── Helpers ────────────────────────────────────────────────
-function str(v)          { return (v ?? '').toString().trim(); }
-function num(v)          { return parseFloat(str(v)) || 0; }
-function fmt(v)          { return (+v).toLocaleString('id-ID', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+function str(v)          { return (v??'').toString().trim(); }
+function num(v)          { return parseFloat(str(v))||0; }
+function fmt(v)          { return (+v).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function setText(id,val) { const el=document.getElementById(id); if(el) el.textContent=val; }
-function esc(x)          { return str(x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function parseDate(s) {
-  if (!s) return null;
-  const c = s.trim();
-  let m;
-  m = c.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
-  m = c.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-  m = c.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
-  const d = new Date(c);
-  return isNaN(d) ? null : d;
-}
+function esc(x)          { return str(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 </script>
 </body>
 </html>
